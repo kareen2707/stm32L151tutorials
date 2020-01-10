@@ -359,22 +359,6 @@ uint8_t BSP_SD_IsDetected(void)
 
 /* USER CODE BEGIN DMAConfigCode */
 
-void BSP_SD_DMA_Tx_IRQHandler(void)
-{
-  HAL_DMA_IRQHandler(hsd.hdmatx);
-}
-
-/**
-  * @brief  Handles SD DMA Rx transfer interrupt request.
-  * @retval None
-  */
-void BSP_SD_DMA_Rx_IRQHandler(void)
-{
-  HAL_DMA_IRQHandler(hsd.hdmarx);
-}
-
-
-
 HAL_StatusTypeDef SD_DMAConfigRx(SD_HandleTypeDef *hsd)
 {
 	static DMA_HandleTypeDef hdma_rx;

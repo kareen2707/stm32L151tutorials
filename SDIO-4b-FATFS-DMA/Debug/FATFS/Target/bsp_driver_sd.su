@@ -16,7 +16,5 @@ bsp_driver_sd.c:319:13:BSP_SD_AbortCallback	4	static
 bsp_driver_sd.c:328:13:BSP_SD_WriteCpltCallback	4	static
 bsp_driver_sd.c:337:13:BSP_SD_ReadCpltCallback	4	static
 bsp_driver_sd.c:349:9:BSP_SD_IsDetected	16	static
-bsp_driver_sd.c:362:6:BSP_SD_DMA_Tx_IRQHandler	8	static
-bsp_driver_sd.c:371:6:BSP_SD_DMA_Rx_IRQHandler	8	static
-bsp_driver_sd.c:378:19:SD_DMAConfigRx	24	static
-bsp_driver_sd.c:415:19:SD_DMAConfigTx	24	static
+bsp_driver_sd.c:362:19:SD_DMAConfigRx	24	static
+bsp_driver_sd.c:399:19:SD_DMAConfigTx	24	static

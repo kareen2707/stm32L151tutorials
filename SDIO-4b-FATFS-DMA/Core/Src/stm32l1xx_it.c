@@ -219,10 +219,10 @@ void DMA2_Channel4_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA2_Channel4_IRQn 0 */
 	if((hsd.Context == (SD_CONTEXT_DMA | SD_CONTEXT_READ_SINGLE_BLOCK)) ||(hsd.Context == (SD_CONTEXT_DMA | SD_CONTEXT_READ_MULTIPLE_BLOCK))){
-		BSP_SD_DMA_Rx_IRQHandler();
+		 HAL_DMA_IRQHandler(hsd.hdmarx);
 	}
 	else if((hsd.Context == (SD_CONTEXT_DMA | SD_CONTEXT_WRITE_SINGLE_BLOCK)) || (hsd.Context == (SD_CONTEXT_DMA | SD_CONTEXT_WRITE_MULTIPLE_BLOCK))){
-	       BSP_SD_DMA_Tx_IRQHandler();
+		 HAL_DMA_IRQHandler(hsd.hdmatx);
 		 }
   /* USER CODE END DMA2_Channel4_IRQn 0 */
   //HAL_DMA_IRQHandler(&hdma_sd_mmc);

@@ -51,7 +51,7 @@ char SDPath[4];   /* SD logical drive path */
 FATFS SDFatFS __attribute__ ((aligned(4)));    /* File system object for SD logical drive */
 FIL SDFile __attribute__ ((aligned(4)));
 FRESULT res;
-uint8_t wtext[] = "dma test6 commenting the HALDMAIRQ handler and using the HALDMARx and HALDMATx handlers defined in BSPDRIVER"; /* File write buffer */
+uint8_t wtext[] = "dma test8 using HAL_DMA_IRQHandler passing hsd.hdmarx and hsd.dmatx directly instead of  BSP_SD_DMA_Tx_IRQHandle and  BSP_SD_DMA_Rx_IRQHandle"; /* File write buffer */
 uint32_t byteswritten;
 
 /* USER CODE END PV */
@@ -109,7 +109,7 @@ int main(void)
         if (res == FR_OK){
         	HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);
         	// 2. Creating a new file for writing/reading later
-        	res = f_open(&SDFile, "again.txt", FA_CREATE_ALWAYS | FA_WRITE); //Writing
+        	res = f_open(&SDFile, "test8.txt", FA_CREATE_ALWAYS | FA_WRITE); //Writing
         	if(res == FR_OK){
         		HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
         		res = f_write(&SDFile, wtext, sizeof(wtext), (void *) &byteswritten);
