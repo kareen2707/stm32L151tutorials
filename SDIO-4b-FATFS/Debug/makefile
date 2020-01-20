@@ -28,21 +28,21 @@ endif
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-stm32l162-FatFS.elf \
+yetimote_sdio.elf \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-stm32l162-FatFS.list \
+yetimote_sdio.list \
 
 
 # All Target
-all: stm32l162-FatFS.elf secondary-outputs
+all: yetimote_sdio.elf secondary-outputs
 
 # Tool invocations
-stm32l162-FatFS.elf: $(OBJS) $(USER_OBJS) C:\Users\karen\STM32CubeIDE\workspace_1.1.0\stm32l162-FatFS\STM32L162RDTX_FLASH.ld
-	arm-none-eabi-gcc -o "stm32l162-FatFS.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\karen\STM32CubeIDE\workspace_1.1.0\stm32l162-FatFS\STM32L162RDTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="stm32l162-FatFS.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+yetimote_sdio.elf: $(OBJS) $(USER_OBJS) C:\Users\karen\STM32CubeIDE\workspace_1.1.0\yetimote_sdio\STM32L151RDTX_FLASH.ld
+	arm-none-eabi-gcc -o "yetimote_sdio.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\karen\STM32CubeIDE\workspace_1.1.0\yetimote_sdio\STM32L151RDTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="yetimote_sdio.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -51,8 +51,8 @@ default.size.stdout: $(EXECUTABLES)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-stm32l162-FatFS.list: $(EXECUTABLES)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "stm32l162-FatFS.list"
+yetimote_sdio.list: $(EXECUTABLES)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "yetimote_sdio.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 

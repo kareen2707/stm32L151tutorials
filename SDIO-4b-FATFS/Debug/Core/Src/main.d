@@ -4,7 +4,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rcc.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_def.h \
  ../Drivers/CMSIS/Device/ST/STM32L1xx/Include/stm32l1xx.h \
- ../Drivers/CMSIS/Device/ST/STM32L1xx/Include/stm32l162xd.h \
+ ../Drivers/CMSIS/Device/ST/STM32L1xx/Include/stm32l151xd.h \
  ../Drivers/CMSIS/Include/core_cm3.h \
  ../Drivers/CMSIS/Include/cmsis_version.h \
  ../Drivers/CMSIS/Include/cmsis_compiler.h \
@@ -22,8 +22,6 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_flash_ramfunc.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr_ex.h \
- ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rtc.h \
- ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rtc_ex.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_sd.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_ll_sdmmc.h \
  ../FATFS/App/fatfs.h ../Middlewares/Third_Party/FatFs/src/ff.h \
@@ -32,8 +30,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/sd_diskio.h \
- ../Core/Inc/rtc.h ../Core/Inc/main.h ../Core/Inc/sdio.h \
- ../Core/Inc/gpio.h
+ ../Core/Inc/sdio.h ../Core/Inc/main.h ../Core/Inc/gpio.h
 
 ../Core/Inc/main.h:
 
@@ -47,7 +44,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Drivers/CMSIS/Device/ST/STM32L1xx/Include/stm32l1xx.h:
 
-../Drivers/CMSIS/Device/ST/STM32L1xx/Include/stm32l162xd.h:
+../Drivers/CMSIS/Device/ST/STM32L1xx/Include/stm32l151xd.h:
 
 ../Drivers/CMSIS/Include/core_cm3.h:
 
@@ -83,10 +80,6 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr_ex.h:
 
-../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rtc.h:
-
-../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rtc_ex.h:
-
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_sd.h:
 
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_ll_sdmmc.h:
@@ -109,10 +102,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../FATFS/Target/sd_diskio.h:
 
-../Core/Inc/rtc.h:
+../Core/Inc/sdio.h:
 
 ../Core/Inc/main.h:
-
-../Core/Inc/sdio.h:
 
 ../Core/Inc/gpio.h:

@@ -5,7 +5,7 @@ FATFS/Target/bsp_driver_sd.o: ../FATFS/Target/bsp_driver_sd.c \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rcc.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_def.h \
  ../Drivers/CMSIS/Device/ST/STM32L1xx/Include/stm32l1xx.h \
- ../Drivers/CMSIS/Device/ST/STM32L1xx/Include/stm32l162xd.h \
+ ../Drivers/CMSIS/Device/ST/STM32L1xx/Include/stm32l151xd.h \
  ../Drivers/CMSIS/Include/core_cm3.h \
  ../Drivers/CMSIS/Include/cmsis_version.h \
  ../Drivers/CMSIS/Include/cmsis_compiler.h \
@@ -23,8 +23,6 @@ FATFS/Target/bsp_driver_sd.o: ../FATFS/Target/bsp_driver_sd.c \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_flash_ramfunc.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr_ex.h \
- ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rtc.h \
- ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rtc_ex.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_sd.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_ll_sdmmc.h
 
@@ -40,7 +38,7 @@ FATFS/Target/bsp_driver_sd.o: ../FATFS/Target/bsp_driver_sd.c \
 
 ../Drivers/CMSIS/Device/ST/STM32L1xx/Include/stm32l1xx.h:
 
-../Drivers/CMSIS/Device/ST/STM32L1xx/Include/stm32l162xd.h:
+../Drivers/CMSIS/Device/ST/STM32L1xx/Include/stm32l151xd.h:
 
 ../Drivers/CMSIS/Include/core_cm3.h:
 
@@ -75,10 +73,6 @@ FATFS/Target/bsp_driver_sd.o: ../FATFS/Target/bsp_driver_sd.c \
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr.h:
 
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr_ex.h:
-
-../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rtc.h:
-
-../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rtc_ex.h:
 
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_sd.h:
 

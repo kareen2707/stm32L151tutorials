@@ -21,7 +21,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "fatfs.h"
-#include "rtc.h"
 #include "sdio.h"
 #include "gpio.h"
 
@@ -97,30 +96,31 @@ int main(void)
   MX_GPIO_Init();
   MX_SDIO_SD_Init();
   MX_FATFS_Init();
-  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
-  uint8_t wtext[] = "test text to check fs win + BA_55AA content"; /* File write buffer */
-  // 1. Register a work area
-      res = f_mount(&SDFatFS, (TCHAR const*) SDPath, 0);
-      if(res == FR_OK ){
-          	  HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);
-          	  // 3. Creating a new file for writing/reading later
-          	  	 //res = f_open(&SDFile, "test1.txt", FA_OPEN_ALWAYS | FA_READ); // Reading
-          	  	  res = f_open(&SDFile, "080120958.txt", FA_CREATE_ALWAYS | FA_WRITE); //Writing
-          	  	  if(res == FR_OK){
-          	  		  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
-          	  		  //res = f_read(&SDFile, &rtext, 15, &bytesread);
-          	  		  res = f_write(&SDFile, wtext, sizeof(wtext), (void *) &byteswritten);
 
-          	  		  if((res != FR_OK) || (byteswritten == 0)){
-          	  			HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_RESET);
-          	  			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
-          	  		  }
-          	  		  //HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_RESET);
-          	  		  //HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
-          	  	  }
-          	  	f_close(&SDFile);
-          }
+  uint8_t wtext[] = "first text written in P1 without DMA "; /* File write buffer */
+  // 1. Register a work area
+        res = f_mount(&SDFatFS, (TCHAR const*) SDPath, 0);
+        if(res == FR_OK ){
+            	  HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);
+            	  // 3. Creating a new file for writing/reading later
+            	  	 //res = f_open(&SDFile, "test1.txt", FA_OPEN_ALWAYS | FA_READ); // Reading
+            	  	  res = f_open(&SDFile, "polar1.txt", FA_CREATE_ALWAYS | FA_WRITE); //Writing
+            	  	  if(res == FR_OK){
+            	  		  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+            	  		  //res = f_read(&SDFile, &rtext, 15, &bytesread);
+            	  		  res = f_write(&SDFile, wtext, sizeof(wtext), (void *) &byteswritten);
+
+            	  		  if((res != FR_OK) || (byteswritten == 0)){
+            	  			HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_RESET);
+            	  			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+            	  		  }
+            	  		  //HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_RESET);
+            	  		  //HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+            	  	  }
+            	  	f_close(&SDFile);
+            }
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -142,17 +142,15 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
   /** Configure the main internal regulator output voltage 
   */
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
   /** Initializes the CPU, AHB and APB busses clocks 
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
@@ -171,12 +169,6 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
-  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
   }

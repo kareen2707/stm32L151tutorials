@@ -5,7 +5,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under Ultimate Liberty license
@@ -217,9 +217,9 @@
 /  Note that enabling exFAT discards C89 compatibility. */
 
 #define _FS_NORTC	0
-#define _NORTC_MON	12
-#define _NORTC_MDAY	13
-#define _NORTC_YEAR	2019
+#define _NORTC_MON	6
+#define _NORTC_MDAY	4
+#define _NORTC_YEAR	2015
 /* The option _FS_NORTC switches timestamp functiton. If the system does not have
 /  any RTC function or valid timestamp is not needed, set _FS_NORTC = 1 to disable
 /  the timestamp function. All objects modified by FatFs will have a fixed timestamp
