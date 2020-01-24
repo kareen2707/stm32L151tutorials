@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under BSD 3-Clause license,
@@ -20,6 +20,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "gpio.h"
+#include "app_x-cube-mems1.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -41,49 +43,22 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-I2C_HandleTypeDef hi2c1;
-I2C_HandleTypeDef hi2c2;
-DMA_HandleTypeDef hdma_i2c2_tx;
 
 /* USER CODE BEGIN PV */
-static uint8_t dev_addr = (0x48<<1);
-static uint8_t pointer_reg[2] = {0x00, 0x01}; // Temperature, Configuration Registers addresses
-static uint8_t conf_9bits[2] = {0x01, 0x00}; // Configuration for 9 bits resolution. By default AT30RS75 has this configuration
-static uint8_t conf_10bits[2] = {0x01, 0x20}; // Configuration for 10 bits resolution.
-static uint8_t conf_11bits[2] = {0x01, 0x40}; // Configuration for 11 bits resolution.
-static uint8_t conf_12bits[2] = {0x01, 0x60}; // Configuration for 12 bits resolution.
-static uint8_t temp_read[2];
-static uint8_t tx_buffer[2] = {0x01, 0x10};
-static uint8_t tx_done = 0;
+uint8_t ID;
+uint16_t temperature;
+float humidity;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_DMA_Init(void);
-static void MX_I2C1_Init(void);
-static void MX_I2C2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void test_I2C2_DMA(){
-	  //tx_done = 0;
-	  HAL_I2C_Master_Transmit(&hi2c2, dev_addr, tx_buffer, 2, 100);
-	  //while(!tx_done);
- }
-
-void test_I2C1_temp_sens(){
-
-	  HAL_I2C_Master_Transmit(&hi2c1, dev_addr, &pointer_reg[1], 1, 100); //Addressing the pointer register to the configuration one
-	  HAL_Delay(5);
-	  HAL_I2C_Master_Transmit(&hi2c1, dev_addr, conf_12bits, 2, 100); //Setting the configuration register
-	  HAL_Delay(5);
-	  //HAL_I2C_Master_Receive(&hi2c1, dev_addr, temp_read, 1, 100); Discomment this line if u want to check the configuration done previously
-	  HAL_I2C_Master_Transmit(&hi2c1, dev_addr, &pointer_reg[0], 1, 100); //Addressing the pointer register to the temperature one
-  }
 
 /* USER CODE END 0 */
 
@@ -116,25 +91,19 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_I2C1_Init();
-  MX_I2C2_Init();
+  MX_MEMS_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
-  test_I2C1_temp_sens();
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
 
+  MX_MEMS_Process();
     /* USER CODE BEGIN 3 */
-	  //test_I2C2_DMA();
-	  //HAL_Delay(5);
-	  //test_I2C1_temp_sens();
-	  HAL_I2C_Master_Receive(&hi2c1, dev_addr, temp_read, 2, 100); //Read temperature
-	  HAL_Delay(5);
   }
   /* USER CODE END 3 */
 }
@@ -179,120 +148,8 @@ void SystemClock_Config(void)
   }
 }
 
-/**
-  * @brief I2C1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_I2C1_Init(void)
-{
-
-  /* USER CODE BEGIN I2C1_Init 0 */
-
-  /* USER CODE END I2C1_Init 0 */
-
-  /* USER CODE BEGIN I2C1_Init 1 */
-
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 100000;
-  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
-
-  /* USER CODE END I2C1_Init 2 */
-
-}
-
-/**
-  * @brief I2C2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_I2C2_Init(void)
-{
-
-  /* USER CODE BEGIN I2C2_Init 0 */
-
-  /* USER CODE END I2C2_Init 0 */
-
-  /* USER CODE BEGIN I2C2_Init 1 */
-
-  /* USER CODE END I2C2_Init 1 */
-  hi2c2.Instance = I2C2;
-  hi2c2.Init.ClockSpeed = 100000;
-  hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c2.Init.OwnAddress1 = 0;
-  hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c2.Init.OwnAddress2 = 0;
-  hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C2_Init 2 */
-
-  /* USER CODE END I2C2_Init 2 */
-
-}
-
-/** 
-  * Enable DMA controller clock
-  */
-static void MX_DMA_Init(void) 
-{
-
-  /* DMA controller clock enable */
-  __HAL_RCC_DMA1_CLK_ENABLE();
-
-  /* DMA interrupt init */
-  /* DMA1_Channel4_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
-
-}
-
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LD2_Pin|LD1_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pins : LD2_Pin LD1_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin|LD1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-}
-
 /* USER CODE BEGIN 4 */
 
-void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c){
-	tx_done++;
-	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-}
 /* USER CODE END 4 */
 
 /**

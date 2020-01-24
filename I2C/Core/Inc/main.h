@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under BSD 3-Clause license,
@@ -28,6 +28,7 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "stm32l1xx_hal.h"
 #include "stm32l1xx_hal.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -58,18 +59,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define SCL_Ex_Pin GPIO_PIN_10
-#define SCL_Ex_GPIO_Port GPIOB
-#define SDA_Ex_Pin GPIO_PIN_11
-#define SDA_Ex_GPIO_Port GPIOB
-#define LD2_Pin GPIO_PIN_4
-#define LD2_GPIO_Port GPIOB
-#define LD1_Pin GPIO_PIN_5
-#define LD1_GPIO_Port GPIOB
-#define S_SCL_T_Pin GPIO_PIN_6
-#define S_SCL_T_GPIO_Port GPIOB
-#define S_SDA_T_Pin GPIO_PIN_7
-#define S_SDA_T_GPIO_Port GPIOB
+#define LED1_Pin GPIO_PIN_8
+#define LED1_GPIO_Port GPIOB
+#define LED2_Pin GPIO_PIN_9
+#define LED2_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
