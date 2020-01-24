@@ -1,4 +1,5 @@
-Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
+MEMS/App/app_x-cube-mems1.o: ../MEMS/App/app_x-cube-mems1.c \
+ ../MEMS/App/app_x-cube-mems1.h ../Core/Inc/main.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal.h \
  ../Core/Inc/stm32l1xx_hal_conf.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_rcc.h \
@@ -23,7 +24,11 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_i2c.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr_ex.h \
- ../Core/Inc/gpio.h ../Core/Inc/main.h ../MEMS/App/app_x-cube-mems1.h
+ ../Drivers/BSP/Components/hts221/hts221.h \
+ ../Drivers/BSP/Components/hts221/hts221_reg.h ../Core/Inc/custom_bus.h \
+ ../Core/Inc/custom_conf.h ../Core/Inc/custom_errno.h
+
+../MEMS/App/app_x-cube-mems1.h:
 
 ../Core/Inc/main.h:
 
@@ -75,8 +80,12 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr_ex.h:
 
-../Core/Inc/gpio.h:
+../Drivers/BSP/Components/hts221/hts221.h:
 
-../Core/Inc/main.h:
+../Drivers/BSP/Components/hts221/hts221_reg.h:
 
-../MEMS/App/app_x-cube-mems1.h:
+../Core/Inc/custom_bus.h:
+
+../Core/Inc/custom_conf.h:
+
+../Core/Inc/custom_errno.h:

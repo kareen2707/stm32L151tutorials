@@ -18,5 +18,7 @@ C_DEPS :=
 SUBDIRS := \
 Core/Src \
 Core/Startup \
+Drivers/BSP/Components/hts221 \
 Drivers/STM32L1xx_HAL_Driver/Src \
+MEMS/App \
 
