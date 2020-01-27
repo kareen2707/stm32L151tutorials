@@ -65,6 +65,8 @@ void Error_Handler(void);
 #define LED2_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
+#define HTS221 //For enabling the humidity and temperature sensor
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

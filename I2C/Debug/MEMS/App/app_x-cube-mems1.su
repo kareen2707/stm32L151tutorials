@@ -1,2 +1,2 @@
-app_x-cube-mems1.c:42:6:MX_MEMS_Init	8	static
-app_x-cube-mems1.c:74:6:MX_MEMS_Process	16	static
+app_x-cube-mems1.c:45:6:MX_MEMS_Init	8	static
+app_x-cube-mems1.c:85:6:MX_MEMS_Process	8	static

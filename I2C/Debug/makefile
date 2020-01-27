@@ -26,21 +26,21 @@ endif
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-bsp-hts221.elf \
+guau-fw.elf \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-bsp-hts221.list \
+guau-fw.list \
 
 
 # All Target
-all: bsp-hts221.elf secondary-outputs
+all: guau-fw.elf secondary-outputs
 
 # Tool invocations
-bsp-hts221.elf: $(OBJS) $(USER_OBJS) C:\Users\karen\STM32CubeIDE\workspace_1.1.0\bsp-hts221\STM32L151RDTX_FLASH.ld
-	arm-none-eabi-gcc -o "bsp-hts221.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\karen\STM32CubeIDE\workspace_1.1.0\bsp-hts221\STM32L151RDTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="bsp-hts221.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+guau-fw.elf: $(OBJS) $(USER_OBJS) C:\Users\karen\STM32CubeIDE\workspace_1.1.0\guau-fw\STM32L151RDTX_FLASH.ld
+	arm-none-eabi-gcc -o "guau-fw.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\karen\STM32CubeIDE\workspace_1.1.0\guau-fw\STM32L151RDTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="guau-fw.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -49,8 +49,8 @@ default.size.stdout: $(EXECUTABLES)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-bsp-hts221.list: $(EXECUTABLES)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "bsp-hts221.list"
+guau-fw.list: $(EXECUTABLES)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "guau-fw.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 

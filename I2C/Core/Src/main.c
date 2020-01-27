@@ -45,9 +45,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint8_t ID;
-uint16_t temperature;
-float humidity;
 
 /* USER CODE END PV */
 
@@ -103,6 +100,7 @@ int main(void)
     /* USER CODE END WHILE */
 
   MX_MEMS_Process();
+  HAL_Delay(100);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
