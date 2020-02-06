@@ -21,6 +21,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "dma.h"
+#include "fatfs.h"
+#include "sdio.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -89,6 +92,8 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_SDIO_SD_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */

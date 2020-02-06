@@ -22,6 +22,8 @@ Core/Src/system_stm32l1xx.o: ../Core/Src/system_stm32l1xx.c \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_flash_ramfunc.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr_ex.h \
+ ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_sd.h \
+ ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_ll_sdmmc.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_tim.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_tim_ex.h
 
@@ -70,6 +72,10 @@ Core/Src/system_stm32l1xx.o: ../Core/Src/system_stm32l1xx.c \
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr.h:
 
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr_ex.h:
+
+../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_sd.h:
+
+../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_ll_sdmmc.h:
 
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_tim.h:
 

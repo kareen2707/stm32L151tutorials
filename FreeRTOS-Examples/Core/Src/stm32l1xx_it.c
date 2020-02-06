@@ -58,6 +58,8 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern DMA_HandleTypeDef hdma_sd_mmc;
+extern SD_HandleTypeDef hsd;
 extern TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN EV */
@@ -172,6 +174,39 @@ void TIM2_IRQHandler(void)
   /* USER CODE BEGIN TIM2_IRQn 1 */
 
   /* USER CODE END TIM2_IRQn 1 */
+}
+
+/**
+  * @brief This function handles SDIO global interrupt.
+  */
+void SDIO_IRQHandler(void)
+{
+  /* USER CODE BEGIN SDIO_IRQn 0 */
+
+  /* USER CODE END SDIO_IRQn 0 */
+  HAL_SD_IRQHandler(&hsd);
+  /* USER CODE BEGIN SDIO_IRQn 1 */
+
+  /* USER CODE END SDIO_IRQn 1 */
+}
+
+/**
+  * @brief This function handles DMA2 channel4 global interrupt.
+  */
+void DMA2_Channel4_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA2_Channel4_IRQn 0 */
+	if((hsd.Context == (SD_CONTEXT_DMA | SD_CONTEXT_READ_SINGLE_BLOCK)) ||(hsd.Context == (SD_CONTEXT_DMA | SD_CONTEXT_READ_MULTIPLE_BLOCK))){
+			 HAL_DMA_IRQHandler(hsd.hdmarx);
+		}
+		else if((hsd.Context == (SD_CONTEXT_DMA | SD_CONTEXT_WRITE_SINGLE_BLOCK)) || (hsd.Context == (SD_CONTEXT_DMA | SD_CONTEXT_WRITE_MULTIPLE_BLOCK))){
+			 HAL_DMA_IRQHandler(hsd.hdmatx);
+			 }
+  /* USER CODE END DMA2_Channel4_IRQn 0 */
+  //HAL_DMA_IRQHandler(&hdma_sd_mmc);
+  /* USER CODE BEGIN DMA2_Channel4_IRQn 1 */
+
+  /* USER CODE END DMA2_Channel4_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
