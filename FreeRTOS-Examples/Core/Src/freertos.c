@@ -23,10 +23,11 @@
 #include "task.h"
 #include "main.h"
 #include "cmsis_os.h"
-#include "fatfs.h"
 
 /* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */     
+/* USER CODE BEGIN Includes */
+#include "fatfs.h"
+#include "app_x-cube-mems1.h"
 
 /* USER CODE END Includes */
 
@@ -55,10 +56,12 @@ FRESULT res;
 uint8_t wtext[] = "This text has been written using FreeRTOS, CMSIS v1.0, and FatFS"; /* File write buffer */
 uint32_t byteswritten;
 
+
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId testTaskHandle;
 osThreadId microSDTaskHandle;
+osThreadId hts221TaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -68,6 +71,7 @@ osThreadId microSDTaskHandle;
 void StartDefaultTask(void const * argument);
 void blinkingLED(void const * argument);
 void microSD(void const * argument);
+void HTS221(void const * argument);
 
 extern void MX_FATFS_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -127,6 +131,10 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(microSDTask, microSD, osPriorityIdle, 0, 128);
   microSDTaskHandle = osThreadCreate(osThread(microSDTask), NULL);
 
+  /* definition and creation of hts221Task */
+  osThreadDef(hts221Task, HTS221, osPriorityIdle, 0, 128);
+  hts221TaskHandle = osThreadCreate(osThread(hts221Task), NULL);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -144,6 +152,9 @@ void StartDefaultTask(void const * argument)
 {
   /* init code for FATFS */
   MX_FATFS_Init();
+
+  /* init code for MEMS */
+  MX_MEMS_Init();
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
   for(;;)
@@ -182,7 +193,7 @@ void blinkingLED(void const * argument)
 void microSD(void const * argument)
 {
   /* USER CODE BEGIN microSD */
-	MX_FATFS_Init();
+	//MX_FATFS_Init();
   /* Infinite loop */
   for(;;)
   {
@@ -204,6 +215,25 @@ void microSD(void const * argument)
     osDelay(500);
   }
   /* USER CODE END microSD */
+}
+
+/* USER CODE BEGIN Header_HTS221 */
+/**
+* @brief Function implementing the hts221Task thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_HTS221 */
+void HTS221(void const * argument)
+{
+  /* USER CODE BEGIN HTS221 */
+  /* Infinite loop */
+  for(;;)
+  {
+	  MX_MEMS_Process();
+	  osDelay(10);
+  }
+  /* USER CODE END HTS221 */
 }
 
 /* Private application code --------------------------------------------------*/

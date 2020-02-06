@@ -18,9 +18,11 @@ C_DEPS :=
 SUBDIRS := \
 Core/Src \
 Core/Startup \
+Drivers/BSP/Components/hts221 \
 Drivers/STM32L1xx_HAL_Driver/Src \
 FATFS/App \
 FATFS/Target \
+MEMS/App \
 Middlewares/Third_Party/FatFs/src \
 Middlewares/Third_Party/FatFs/src/option \
 Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS \

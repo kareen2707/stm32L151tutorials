@@ -29,6 +29,7 @@ Core/Src/freertos.o: ../Core/Src/freertos.c \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_flash.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_flash_ex.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_flash_ramfunc.h \
+ ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_i2c.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr_ex.h \
  ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_sd.h \
@@ -48,7 +49,10 @@ Core/Src/freertos.o: ../Core/Src/freertos.c \
  ../FATFS/Target/bsp_driver_sd.h \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
- ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/sd_diskio.h
+ ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/sd_diskio.h \
+ ../MEMS/App/app_x-cube-mems1.h ../Drivers/BSP/Components/hts221/hts221.h \
+ ../Drivers/BSP/Components/hts221/hts221_reg.h ../Core/Inc/custom_bus.h \
+ ../Core/Inc/custom_conf.h ../Core/Inc/custom_errno.h
 
 ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h:
 
@@ -112,6 +116,8 @@ Core/Src/freertos.o: ../Core/Src/freertos.c \
 
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_flash_ramfunc.h:
 
+../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_i2c.h:
+
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr.h:
 
 ../Drivers/STM32L1xx_HAL_Driver/Inc/stm32l1xx_hal_pwr_ex.h:
@@ -157,3 +163,15 @@ Core/Src/freertos.o: ../Core/Src/freertos.c \
 ../Middlewares/Third_Party/FatFs/src/ff.h:
 
 ../FATFS/Target/sd_diskio.h:
+
+../MEMS/App/app_x-cube-mems1.h:
+
+../Drivers/BSP/Components/hts221/hts221.h:
+
+../Drivers/BSP/Components/hts221/hts221_reg.h:
+
+../Core/Inc/custom_bus.h:
+
+../Core/Inc/custom_conf.h:
+
+../Core/Inc/custom_errno.h:
