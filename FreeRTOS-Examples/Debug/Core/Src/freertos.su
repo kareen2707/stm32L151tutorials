@@ -1,6 +1,0 @@
-freertos.c:86:6:vApplicationGetIdleTaskMemory	24	static
-freertos.c:100:6:MX_FREERTOS_Init	128	static
-freertos.c:151:6:StartDefaultTask	16	static
-freertos.c:174:6:blinkingLED	16	static
-freertos.c:193:6:microSD	16	static
-freertos.c:227:6:HTS221	16	static
