@@ -1,0 +1,10 @@
+freertos.c:90:13:vApplicationStackOverflowHook	16	static
+freertos.c:103:13:vApplicationMallocFailedHook	8	static
+freertos.c:126:6:vApplicationGetIdleTaskMemory	24	static
+freertos.c:139:6:vApplicationGetTimerTaskMemory	24	static
+freertos.c:153:6:MX_FREERTOS_Init	136	static
+freertos.c:233:6:StartDefaultTask	16	static
+freertos.c:253:6:microSD	48	static
+freertos.c:301:6:gnss	24	static
+freertos.c:318:6:Callback01	16	static
+freertos.c:327:9:parse_gprmc	448	static
