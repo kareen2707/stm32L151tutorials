@@ -55,6 +55,10 @@ FATFS SDFatFS __attribute__ ((aligned(4)));    /* File system object for SD logi
 FIL SDFile __attribute__ ((aligned(4)));
 uint8_t fileCreated = 0;
 uint8_t nmea_test[100] = "$GPGSA,A,1,,*1E\r\n$GNRMC,164004.000,A,4027.1783,N,00343.5470,W,0.19,67.20,030320,,,*58\r\n";
+//static uint8_t* uart_rx_ptr_head;
+static uint8_t* uart_rx_ptr_tail = &nmea_test[0];
+
+static uint8_t cmd[72];
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
@@ -65,7 +69,8 @@ osTimerId myTimer01Handle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-int32_t parse_gprmc (GPRMC_Infos *gprmc_data, uint8_t *NMEA);
+//int32_t parse_gprmc (GPRMC_Infos *gprmc_data, uint8_t *NMEA);
+int32_t read_command(uint8_t * rxData, uint16_t size);
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -253,10 +258,10 @@ void StartDefaultTask(void const * argument)
 void microSD(void const * argument)
 {
   /* USER CODE BEGIN microSD */
-	osEvent rx;
-	GPRMC_Infos *rx_gprmc;
+//	osEvent rx;
+//	GPRMC_Infos *rx_gprmc;
 	uint8_t byteswritten;
-	char utc_data[10];
+//	char utc_data[11] = {'\0'};
 
 	if(f_mount(&SDFatFS, (TCHAR const*) SDPath, 1) == FR_OK){ // 1. Register a work area
 			if(f_open(&SDFile, "lines.txt", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK){ // 2. Creating a new file to write it later
@@ -269,20 +274,46 @@ void microSD(void const * argument)
   {
 	  byteswritten = 0;
 	  if(fileCreated){
-		  rx = osMessageGet(myQueue01Handle, 10);
-		  rx_gprmc = (GPRMC_Infos *)rx.value.p;
+//		  rx = osMessageGet(myQueue01Handle, 10);
+//		  rx_gprmc = (GPRMC_Infos *)rx.value.p;
 		  //utc_data[0] = rx_gprmc->utc->utc;
-		  itoa(rx_gprmc->utc->utc, utc_data, 10);
-		  //utc_data[0] = (uint8_t) rx_gprmc->utc->hh;
-		  //utc_data[1] = (uint8_t) rx_gprmc->utc->mm;
-		  //utc_data[2] = (uint8_t) rx_gprmc->utc->ss;
+//		  itoa(rx_gprmc->utc->utc, utc_data, 10);
+		  f_write(&SDFile, "UTC time:\r\n", strlen("UTC time:\r\n"), (void *)&byteswritten);
+//		  f_write(&SDFile, utc_data, sizeof(utc_data), (void *) &byteswritten);
+//		  f_write(&SDFile, "\r\n", strlen("\r\n"), (void *)&byteswritten);
+//		  byteswritten = 0;
+//		  itoa(rx_gprmc->xyz->lat, utc_data, 10);
+//		  f_write(&SDFile, "Latitude:\r\n", strlen("Latitude:\r\n"), (void *)&byteswritten);
+//		  f_write(&SDFile, utc_data, sizeof(utc_data), (void *) &byteswritten);
+//		  f_write(&SDFile, "\r\n", strlen("\r\n"), (void *)&byteswritten);
+//		  byteswritten = 0;
+//		  itoa(rx_gprmc->xyz->ns, utc_data, 10);
+//		  f_write(&SDFile, "N/S:\r\n", strlen("N/S:\r\n"), (void *)&byteswritten);
+//		  f_write(&SDFile, utc_data, sizeof(utc_data), (void *) &byteswritten);
+//		  f_write(&SDFile, "\r\n", strlen("\r\n"), (void *)&byteswritten);
+//		  byteswritten = 0;
+//		  itoa(rx_gprmc->xyz->lon, utc_data, 10);
+//		  f_write(&SDFile, "Longitude:\r\n", strlen("Longitude:\r\n"), (void *)&byteswritten);
+//		  f_write(&SDFile, utc_data, sizeof(utc_data), (void *) &byteswritten);
+//		  f_write(&SDFile, "\r\n", strlen("\r\n"), (void *)&byteswritten);
+//		  byteswritten = 0;
+//		  itoa(rx_gprmc->xyz->ew, utc_data, 10);
+//		  f_write(&SDFile, "E/W:\r\n", strlen("E/W:\r\n"), (void *)&byteswritten);
+//		  f_write(&SDFile, utc_data, sizeof(utc_data), (void *) &byteswritten);
+//		  f_write(&SDFile, "\r\n", strlen("\r\n"), (void *)&byteswritten);
+//		  byteswritten = 0;
+//		  itoa(rx_gprmc->date, utc_data, 10);
+//		  f_write(&SDFile, "UTC date:\r\n", strlen("UTC date:\r\n"), (void *)&byteswritten);
+//		  f_write(&SDFile, utc_data, sizeof(utc_data), (void *) &byteswritten);
+//		  f_write(&SDFile, "\r\n", strlen("\r\n"), (void *)&byteswritten);
+		  byteswritten = 0;
 		  //if(f_write(&SDFile, rx_gprmc->utc->utc, sizeof(rx_gprmc->utc->utc), (void *)&byteswritten)){
 		  //if(f_write(&SDFile, (const void *)str1, strlen(str1), (void *)&byteswritten)){
 			  //f_close(&SDFile);
 		  //}
-		  f_write(&SDFile, utc_data, sizeof(utc_data), (void *) &byteswritten);
-		  f_write(&SDFile, "\r\n", strlen("\r\n"), (void *)&byteswritten);
-		  byteswritten = 0;
+//		  f_write(&SDFile, utc_data, sizeof(utc_data), (void *) &byteswritten);
+//		  f_write(&SDFile, "\r\n", strlen("\r\n"), (void *)&byteswritten);
+//		  byteswritten = 0;
 		  f_sync(&SDFile);
 	  }
 
@@ -302,13 +333,15 @@ void gnss(void const * argument)
 {
   /* USER CODE BEGIN gnss */
 	GPRMC_Infos * gnrmc_data = (GPRMC_Infos *) argument;
+	int32_t ret;
   /* Infinite loop */
   for(;;)
   {
 
-    if(!parse_gprmc(gnrmc_data, nmea_test)){
-    	osMessagePut(myQueue01Handle, (uint32_t)gnrmc_data, 10);
-    }
+//    if(!parse_gprmc(gnrmc_data, nmea_test)){
+//    	osMessagePut(myQueue01Handle, (uint32_t)gnrmc_data, 10);
+//    }
+	ret = read_command(cmd, 71);
     osDelay(100);
   }
   /* USER CODE END gnss */
@@ -324,62 +357,60 @@ void Callback01(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-int32_t parse_gprmc (GPRMC_Infos *gprmc_data, uint8_t *NMEA){
-//int32_t parse_gprmc (uint8_t *buffer, uint8_t *NMEA){
-//int32_t parse_gprmc (uint8_t *NMEA){
 
-	  uint8_t app[MAX_MSG_LEN][MAX_MSG_LEN];
-	  uint8_t valid_msg = 0;
+int32_t read_command(uint8_t * rxData, uint16_t size){
 
-	  //ParseStatus_Typedef status = PARSE_FAIL;
-	  int32_t status = 1; // fail
+	uint16_t read_bytes = 0;
+	uint16_t num_stored_bytes = 91;
 
-	  if(NMEA == NULL)
-	    return status;
+	while(num_stored_bytes){
+		if(((*uart_rx_ptr_tail) != '\r' ) && ((*uart_rx_ptr_tail) != '\n' ) ){
+			if(((*uart_rx_ptr_tail) == ',' ) || ((*uart_rx_ptr_tail) == '*' )){
+				rxData[read_bytes] = '\0'; //Filling null values with spaces
+			}
+			else{
+				rxData[read_bytes] = *uart_rx_ptr_tail;
+			}
+			read_bytes++;
+			num_stored_bytes--;
+			uart_rx_ptr_tail++;
 
-	  /* clear the app[][] buffer */
-	  for (uint8_t i=0; i<MAX_MSG_LEN; i++) {
-	    memset(app[i], 0, MAX_MSG_LEN);
-	  }
+			if(uart_rx_ptr_tail >= &nmea_test[100]){
+				uart_rx_ptr_tail = &nmea_test[0];
+			}
+			if(read_bytes >= size){
+				return 2; //error
+			}
+		}
 
-	  for (unsigned i = 0, j = 0, k = 0; NMEA[i] != '\n' && i < strlen((char *)NMEA) - 1; i++)
-	  {
-	    if ((NMEA[i] == ',') || (NMEA[i] == '*')) {
-	      app[j][k] = '\0';
+		else{ //end of line detected
+				//rxData[read_bytes] = *uart_rx_ptr_tail;
+			read_bytes++;
+			num_stored_bytes--;
+			uart_rx_ptr_tail++;
+			if(uart_rx_ptr_tail >= &nmea_test[100]){
+				uart_rx_ptr_tail = &nmea_test[0];
+			}
+			if(read_bytes >= size){
+				return 2;
+			}
 
-	      if (strcmp((char *)app[0], "$GNRMC") == 0)
-	      {
-	        j++;
-	        k = 0;
-	        valid_msg = 1;
-	        continue;
-	      }
-	      else {
-	        while (NMEA[i++] != '\n');
-	        j = k = 0;
-	      }
-	    }
-	    app[j][k++] = NMEA[i];
-	  }
+			if(strcmp((char *) rxData, "$GNRMC")!= 0){
+				read_bytes = 0;
+				num_stored_bytes--;
+				uart_rx_ptr_tail++;
+				if(uart_rx_ptr_tail >= &nmea_test[100]){
+					uart_rx_ptr_tail = &nmea_test[0];
+				}
+					//continue; //maybe is not needed
+			}
+			else{
+					return 1; //found command
+				}
+		}
 
-	  if (valid_msg == 1) {
-
-		  gprmc_data->utc->utc = atoi((const char *) app[1]);
-		  gprmc_data->utc->hh =  atoi((const char *) app[1])/10000;
-		  gprmc_data->utc->mm =  (gprmc_data->utc->utc - (gprmc_data->utc->hh * 10000))/100;
-		  gprmc_data->utc->ss = gprmc_data->utc->utc - ((gprmc_data->utc->hh * 10000) + (gprmc_data->utc->mm*100));
-		  gprmc_data->status = app[2][0];
-		  gprmc_data->xyz->lat = atoff((const char *) app[3]);
-		  gprmc_data->xyz->ns = app[4][0];
-		  gprmc_data->xyz->lon = atoff((const char *)app[5]);
-		  gprmc_data->xyz->ns = app[6][0];
-		  gprmc_data->date = atoi((const char *) app[9]);
-		  valid_msg = 0;
-		  status = 0;
-		  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
-	  }
-
-	  return status;
+	}
+	return 0; //not found
 }
 
 
