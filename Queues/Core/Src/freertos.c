@@ -40,7 +40,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define MAX_MSG_LEN 20
+#define BUFFER_SIZE 88
+#define MAX_CMD_SIZE 68
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -54,11 +55,12 @@ char SDPath[4];   /* SD logical drive path */
 FATFS SDFatFS __attribute__ ((aligned(4)));    /* File system object for SD logical drive */
 FIL SDFile __attribute__ ((aligned(4)));
 uint8_t fileCreated = 0;
-uint8_t nmea_test[100] = "$GPGSA,A,1,,*1E\r\n$GNRMC,164004.000,A,4027.1783,N,00343.5470,W,0.19,67.20,030320,,,*58\r\n";
+//uint8_t nmea_test[BUFFER_SIZE] = "$GPGSA,A,1,,*1E\r\n$GNRMC,164004.000,A,4027.1783,N,00343.5470,W,0.19,67.20,030320,,,*58\r\n";
+uint8_t nmea_test[BUFFER_SIZE] = "N,00343.5470,W,0.19,67.20,030320,,,*58\r\n$GPGSA,A,1,,*1E\r\n$GNRMC,164004.000,A,4027.1783,";
 //static uint8_t* uart_rx_ptr_head;
 static uint8_t* uart_rx_ptr_tail = &nmea_test[0];
-
-static uint8_t cmd[72];
+static uint8_t cmd[MAX_CMD_SIZE];
+static uint8_t new_cmd = 0; //Flag to synchronize the reading and writing tasks
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
@@ -66,10 +68,10 @@ osThreadId consumerTaskHandle;
 osThreadId producer1Handle;
 osMessageQId myQueue01Handle;
 osTimerId myTimer01Handle;
+osMutexId myMutexHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-//int32_t parse_gprmc (GPRMC_Infos *gprmc_data, uint8_t *NMEA);
 int32_t read_command(uint8_t * rxData, uint16_t size);
 /* USER CODE END FunctionPrototypes */
 
@@ -159,35 +161,14 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
 	MX_FATFS_Init();
 
-	UTC_Info *test_utc = (UTC_Info *) pvPortMalloc(sizeof(UTC_Info));
-	Coords *test_cords = (Coords *) pvPortMalloc(sizeof(Coords));
-	GPRMC_Infos *test_gprmc = (GPRMC_Infos *) pvPortMalloc(sizeof(GPRMC_Infos));
-	//uint8_t utc_date = 0;
-	//char *gnrmc_status = (char *) pvPortMalloc(2);
-
-	test_utc->utc = 0;
-	test_utc->hh = 0;
-	test_utc->mm = 0;
-	test_utc->ss = 0;
-
-	test_cords->lat = 0;
-	test_cords->lon = 0;
-	test_cords->ew = 0;
-	test_cords->ns = 0;
-
-	test_gprmc->utc = test_utc;
-	test_gprmc->status = 'V';
-	test_gprmc->xyz = test_cords;
-	//test_gprmc->date = 0;
-
   /* USER CODE END Init */
 
   /* USER CODE BEGIN RTOS_MUTEX */
-  /* add mutexes, ... */
+	osMutexDef(myMut1);
+	myMutexHandle = osMutexCreate(osMutex(myMut1));
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
-  /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* Create the timer(s) */
@@ -220,7 +201,7 @@ void MX_FREERTOS_Init(void) {
 
   /* definition and creation of producer1 */
   osThreadDef(producer1, gnss, osPriorityNormal, 0, 300);
-  producer1Handle = osThreadCreate(osThread(producer1), (void *) test_gprmc);
+  producer1Handle = osThreadCreate(osThread(producer1), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -258,13 +239,11 @@ void StartDefaultTask(void const * argument)
 void microSD(void const * argument)
 {
   /* USER CODE BEGIN microSD */
-//	osEvent rx;
-//	GPRMC_Infos *rx_gprmc;
+	osEvent rx;
 	uint8_t byteswritten;
-//	char utc_data[11] = {'\0'};
 
 	if(f_mount(&SDFatFS, (TCHAR const*) SDPath, 1) == FR_OK){ // 1. Register a work area
-			if(f_open(&SDFile, "lines.txt", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK){ // 2. Creating a new file to write it later
+			if(f_open(&SDFile, "mov.txt", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK){ // 2. Creating a new file to write it later
 				fileCreated = 1;
 			}
 		}
@@ -273,48 +252,16 @@ void microSD(void const * argument)
   for(;;)
   {
 	  byteswritten = 0;
-	  if(fileCreated){
-//		  rx = osMessageGet(myQueue01Handle, 10);
-//		  rx_gprmc = (GPRMC_Infos *)rx.value.p;
-		  //utc_data[0] = rx_gprmc->utc->utc;
-//		  itoa(rx_gprmc->utc->utc, utc_data, 10);
-		  f_write(&SDFile, "UTC time:\r\n", strlen("UTC time:\r\n"), (void *)&byteswritten);
-//		  f_write(&SDFile, utc_data, sizeof(utc_data), (void *) &byteswritten);
-//		  f_write(&SDFile, "\r\n", strlen("\r\n"), (void *)&byteswritten);
-//		  byteswritten = 0;
-//		  itoa(rx_gprmc->xyz->lat, utc_data, 10);
-//		  f_write(&SDFile, "Latitude:\r\n", strlen("Latitude:\r\n"), (void *)&byteswritten);
-//		  f_write(&SDFile, utc_data, sizeof(utc_data), (void *) &byteswritten);
-//		  f_write(&SDFile, "\r\n", strlen("\r\n"), (void *)&byteswritten);
-//		  byteswritten = 0;
-//		  itoa(rx_gprmc->xyz->ns, utc_data, 10);
-//		  f_write(&SDFile, "N/S:\r\n", strlen("N/S:\r\n"), (void *)&byteswritten);
-//		  f_write(&SDFile, utc_data, sizeof(utc_data), (void *) &byteswritten);
-//		  f_write(&SDFile, "\r\n", strlen("\r\n"), (void *)&byteswritten);
-//		  byteswritten = 0;
-//		  itoa(rx_gprmc->xyz->lon, utc_data, 10);
-//		  f_write(&SDFile, "Longitude:\r\n", strlen("Longitude:\r\n"), (void *)&byteswritten);
-//		  f_write(&SDFile, utc_data, sizeof(utc_data), (void *) &byteswritten);
-//		  f_write(&SDFile, "\r\n", strlen("\r\n"), (void *)&byteswritten);
-//		  byteswritten = 0;
-//		  itoa(rx_gprmc->xyz->ew, utc_data, 10);
-//		  f_write(&SDFile, "E/W:\r\n", strlen("E/W:\r\n"), (void *)&byteswritten);
-//		  f_write(&SDFile, utc_data, sizeof(utc_data), (void *) &byteswritten);
-//		  f_write(&SDFile, "\r\n", strlen("\r\n"), (void *)&byteswritten);
-//		  byteswritten = 0;
-//		  itoa(rx_gprmc->date, utc_data, 10);
-//		  f_write(&SDFile, "UTC date:\r\n", strlen("UTC date:\r\n"), (void *)&byteswritten);
-//		  f_write(&SDFile, utc_data, sizeof(utc_data), (void *) &byteswritten);
-//		  f_write(&SDFile, "\r\n", strlen("\r\n"), (void *)&byteswritten);
-		  byteswritten = 0;
-		  //if(f_write(&SDFile, rx_gprmc->utc->utc, sizeof(rx_gprmc->utc->utc), (void *)&byteswritten)){
-		  //if(f_write(&SDFile, (const void *)str1, strlen(str1), (void *)&byteswritten)){
-			  //f_close(&SDFile);
-		  //}
-//		  f_write(&SDFile, utc_data, sizeof(utc_data), (void *) &byteswritten);
-//		  f_write(&SDFile, "\r\n", strlen("\r\n"), (void *)&byteswritten);
-//		  byteswritten = 0;
-		  f_sync(&SDFile);
+	  if(fileCreated && new_cmd){
+		  if((osMutexWait(myMutexHandle, 6)) == osOK){
+			  rx = osMessageGet(myQueue01Handle, 10);
+			  new_cmd = 0; // Cleaning the flag
+			  osMutexRelease(myMutexHandle);
+			  f_write(&SDFile, (const void *) rx.value.p , MAX_CMD_SIZE, (void *)&byteswritten);
+			  f_write(&SDFile, "\r\n", strlen("\r\n"), (void *)&byteswritten);
+			  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
+			  f_sync(&SDFile);
+		  }
 	  }
 
     osDelay(200);
@@ -332,16 +279,19 @@ void microSD(void const * argument)
 void gnss(void const * argument)
 {
   /* USER CODE BEGIN gnss */
-	GPRMC_Infos * gnrmc_data = (GPRMC_Infos *) argument;
-	int32_t ret;
+
   /* Infinite loop */
   for(;;)
   {
 
-//    if(!parse_gprmc(gnrmc_data, nmea_test)){
-//    	osMessagePut(myQueue01Handle, (uint32_t)gnrmc_data, 10);
-//    }
-	ret = read_command(cmd, 71);
+	if(read_command(cmd, MAX_CMD_SIZE) == 1){
+		if((osMutexWait(myMutexHandle, 6)) == osOK){
+			osMessagePut(myQueue01Handle, (uint32_t)cmd, 10);
+			new_cmd = 1; //Flag enabled
+			osMutexRelease(myMutexHandle);
+			memset((char *) cmd, '\0', MAX_CMD_SIZE);
+		}
+	}
     osDelay(100);
   }
   /* USER CODE END gnss */
@@ -361,7 +311,9 @@ void Callback01(void const * argument)
 int32_t read_command(uint8_t * rxData, uint16_t size){
 
 	uint16_t read_bytes = 0;
-	uint16_t num_stored_bytes = 91;
+	uint16_t num_stored_bytes = BUFFER_SIZE;
+	//uint8_t* uart_rx_ptr_tail = &nmea_test[0];
+
 
 	while(num_stored_bytes){
 		if(((*uart_rx_ptr_tail) != '\r' ) && ((*uart_rx_ptr_tail) != '\n' ) ){
@@ -375,7 +327,7 @@ int32_t read_command(uint8_t * rxData, uint16_t size){
 			num_stored_bytes--;
 			uart_rx_ptr_tail++;
 
-			if(uart_rx_ptr_tail >= &nmea_test[100]){
+			if(uart_rx_ptr_tail >= &nmea_test[BUFFER_SIZE]){
 				uart_rx_ptr_tail = &nmea_test[0];
 			}
 			if(read_bytes >= size){
@@ -384,11 +336,11 @@ int32_t read_command(uint8_t * rxData, uint16_t size){
 		}
 
 		else{ //end of line detected
-				//rxData[read_bytes] = *uart_rx_ptr_tail;
+
 			read_bytes++;
 			num_stored_bytes--;
 			uart_rx_ptr_tail++;
-			if(uart_rx_ptr_tail >= &nmea_test[100]){
+			if(uart_rx_ptr_tail >= &nmea_test[BUFFER_SIZE]){
 				uart_rx_ptr_tail = &nmea_test[0];
 			}
 			if(read_bytes >= size){
@@ -399,10 +351,10 @@ int32_t read_command(uint8_t * rxData, uint16_t size){
 				read_bytes = 0;
 				num_stored_bytes--;
 				uart_rx_ptr_tail++;
-				if(uart_rx_ptr_tail >= &nmea_test[100]){
+				if(uart_rx_ptr_tail >= &nmea_test[BUFFER_SIZE]){
 					uart_rx_ptr_tail = &nmea_test[0];
 				}
-					//continue; //maybe is not needed
+
 			}
 			else{
 					return 1; //found command
@@ -410,7 +362,7 @@ int32_t read_command(uint8_t * rxData, uint16_t size){
 		}
 
 	}
-	return 0; //not found
+	return 0; //command not found
 }
 
 
