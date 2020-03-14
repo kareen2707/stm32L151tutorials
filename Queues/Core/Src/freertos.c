@@ -42,6 +42,7 @@
 /* USER CODE BEGIN PD */
 #define BUFFER_SIZE 88
 #define MAX_CMD_SIZE 68
+#define UART_RX_BUFFER_SIZE 256
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -57,10 +58,16 @@ FIL SDFile __attribute__ ((aligned(4)));
 uint8_t fileCreated = 0;
 //uint8_t nmea_test[BUFFER_SIZE] = "$GPGSA,A,1,,*1E\r\n$GNRMC,164004.000,A,4027.1783,N,00343.5470,W,0.19,67.20,030320,,,*58\r\n";
 uint8_t nmea_test[BUFFER_SIZE] = "N,00343.5470,W,0.19,67.20,030320,,,*58\r\n$GPGSA,A,1,,*1E\r\n$GNRMC,164004.000,A,4027.1783,";
-//static uint8_t* uart_rx_ptr_head;
-static uint8_t* uart_rx_ptr_tail = &nmea_test[0];
+
+static uint8_t uart_rx_buffer[UART_RX_BUFFER_SIZE];
+static uint8_t* uart_rx_ptr_head;
+static uint8_t* uart_rx_ptr_tail;
+static uint16_t num_stored_bytes;
+
+//static uint8_t* uart_rx_ptr_tail = &nmea_test[0];
 static uint8_t cmd[MAX_CMD_SIZE];
 static uint8_t new_cmd = 0; //Flag to synchronize the reading and writing tasks
+UART_HandleTypeDef huart1;
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
@@ -160,6 +167,10 @@ void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer, Stack
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
 	MX_FATFS_Init();
+	HAL_UART_Receive_DMA(&huart1, uart_rx_buffer, UART_RX_BUFFER_SIZE);
+
+	uart_rx_ptr_head = uart_rx_buffer;
+	uart_rx_ptr_tail = uart_rx_ptr_head;
 
   /* USER CODE END Init */
 
@@ -182,7 +193,7 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the queue(s) */
   /* definition and creation of myQueue01 */
-  osMessageQDef(myQueue01, 3, uint32_t);
+  osMessageQDef(myQueue01, 4, uint32_t);
   //osMessageQDef(myQueue01, sizeof(struct GPRMC_Infos), GPRMC_Infos);
   myQueue01Handle = osMessageCreate(osMessageQ(myQueue01), NULL);
 
@@ -241,9 +252,10 @@ void microSD(void const * argument)
   /* USER CODE BEGIN microSD */
 	osEvent rx;
 	uint8_t byteswritten;
+	//uint8_t * temp_cmd;
 
 	if(f_mount(&SDFatFS, (TCHAR const*) SDPath, 1) == FR_OK){ // 1. Register a work area
-			if(f_open(&SDFile, "mov.txt", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK){ // 2. Creating a new file to write it later
+			if(f_open(&SDFile, "real.txt", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK){ // 2. Creating a new file to write it later
 				fileCreated = 1;
 			}
 		}
@@ -254,17 +266,18 @@ void microSD(void const * argument)
 	  byteswritten = 0;
 	  if(fileCreated && new_cmd){
 		  if((osMutexWait(myMutexHandle, 6)) == osOK){
-			  rx = osMessageGet(myQueue01Handle, 10);
+			  rx = osMessageGet(myQueue01Handle, 0);
+			  //temp_cmd = (uint8_t *) rx.value.p;
 			  new_cmd = 0; // Cleaning the flag
 			  osMutexRelease(myMutexHandle);
-			  f_write(&SDFile, (const void *) rx.value.p , MAX_CMD_SIZE, (void *)&byteswritten);
+			  f_write(&SDFile, (const void *) rx.value.p, MAX_CMD_SIZE, (void *)&byteswritten);
 			  f_write(&SDFile, "\r\n", strlen("\r\n"), (void *)&byteswritten);
 			  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
 			  f_sync(&SDFile);
 		  }
 	  }
 
-    osDelay(200);
+    osDelay(110);
   }
   /* USER CODE END microSD */
 }
@@ -286,10 +299,10 @@ void gnss(void const * argument)
 
 	if(read_command(cmd, MAX_CMD_SIZE) == 1){
 		if((osMutexWait(myMutexHandle, 6)) == osOK){
-			osMessagePut(myQueue01Handle, (uint32_t)cmd, 10);
+			osMessagePut(myQueue01Handle, (uint32_t)cmd, 0);
 			new_cmd = 1; //Flag enabled
 			osMutexRelease(myMutexHandle);
-			memset((char *) cmd, '\0', MAX_CMD_SIZE);
+			//memset((char *) cmd, '\0', MAX_CMD_SIZE);
 		}
 	}
     osDelay(100);
@@ -310,8 +323,31 @@ void Callback01(void const * argument)
 
 int32_t read_command(uint8_t * rxData, uint16_t size){
 
+	uint8_t *new_uart_rx_ptr_head;
+	uint32_t dma_counter = __HAL_DMA_GET_COUNTER(huart1.hdmarx);
+	uint16_t new_bytes = 0;
+
+	if(!dma_counter){
+		dma_counter = UART_RX_BUFFER_SIZE;
+	}
+	new_uart_rx_ptr_head = uart_rx_buffer + UART_RX_BUFFER_SIZE - dma_counter;
+	if(new_uart_rx_ptr_head >= uart_rx_ptr_head){
+		new_bytes = (uint16_t)(new_uart_rx_ptr_head - uart_rx_ptr_head);
+		num_stored_bytes += new_bytes;
+	}
+	else{
+		new_bytes = UART_RX_BUFFER_SIZE - ((uint16_t)(uart_rx_ptr_head - new_uart_rx_ptr_head));
+		num_stored_bytes += new_bytes;
+	}
+
+	uart_rx_ptr_head = new_uart_rx_ptr_head;
+	if(num_stored_bytes >= UART_RX_BUFFER_SIZE){
+		num_stored_bytes = UART_RX_BUFFER_SIZE;
+		uart_rx_ptr_tail = uart_rx_ptr_head;
+	}
+
 	uint16_t read_bytes = 0;
-	uint16_t num_stored_bytes = BUFFER_SIZE;
+	//uint16_t num_stored_bytes = BUFFER_SIZE;
 	//uint8_t* uart_rx_ptr_tail = &nmea_test[0];
 
 
@@ -327,8 +363,8 @@ int32_t read_command(uint8_t * rxData, uint16_t size){
 			num_stored_bytes--;
 			uart_rx_ptr_tail++;
 
-			if(uart_rx_ptr_tail >= &nmea_test[BUFFER_SIZE]){
-				uart_rx_ptr_tail = &nmea_test[0];
+			if(uart_rx_ptr_tail >= &uart_rx_buffer[UART_RX_BUFFER_SIZE]){
+				uart_rx_ptr_tail = uart_rx_buffer;
 			}
 			if(read_bytes >= size){
 				return 2; //error
@@ -340,8 +376,8 @@ int32_t read_command(uint8_t * rxData, uint16_t size){
 			read_bytes++;
 			num_stored_bytes--;
 			uart_rx_ptr_tail++;
-			if(uart_rx_ptr_tail >= &nmea_test[BUFFER_SIZE]){
-				uart_rx_ptr_tail = &nmea_test[0];
+			if(uart_rx_ptr_tail >= &uart_rx_buffer[UART_RX_BUFFER_SIZE]){
+				uart_rx_ptr_tail = uart_rx_buffer;
 			}
 			if(read_bytes >= size){
 				return 2;
@@ -351,8 +387,8 @@ int32_t read_command(uint8_t * rxData, uint16_t size){
 				read_bytes = 0;
 				num_stored_bytes--;
 				uart_rx_ptr_tail++;
-				if(uart_rx_ptr_tail >= &nmea_test[BUFFER_SIZE]){
-					uart_rx_ptr_tail = &nmea_test[0];
+				if(uart_rx_ptr_tail >= &uart_rx_buffer[UART_RX_BUFFER_SIZE]){
+					uart_rx_ptr_tail = uart_rx_buffer;
 				}
 
 			}
