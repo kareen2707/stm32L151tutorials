@@ -64,7 +64,7 @@ void MX_RTC_Init(void)
   sDate.WeekDay = RTC_WEEKDAY_TUESDAY;
   sDate.Month = RTC_MONTH_MARCH;
   sDate.Date = 0x11;
-  sDate.Year = 0x20;
+  sDate.Year = 0x40; //To have 2020 year
 
   if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
   {

@@ -56,8 +56,9 @@ char SDPath[4];   /* SD logical drive path */
 FATFS SDFatFS __attribute__ ((aligned(4)));    /* File system object for SD logical drive */
 FIL SDFile __attribute__ ((aligned(4)));
 uint8_t fileCreated = 0;
-//uint8_t nmea_test[BUFFER_SIZE] = "$GPGSA,A,1,,*1E\r\n$GNRMC,164004.000,A,4027.1783,N,00343.5470,W,0.19,67.20,030320,,,*58\r\n";
-uint8_t nmea_test[BUFFER_SIZE] = "N,00343.5470,W,0.19,67.20,030320,,,*58\r\n$GPGSA,A,1,,*1E\r\n$GNRMC,164004.000,A,4027.1783,";
+//Static buffers to test the read_command() function. With the first one the function result is 1 (found) with the second one 0 (not found)
+uint8_t nmea_test[BUFFER_SIZE] = "$GPGSA,A,1,,*1E\r\n$GNRMC,164004.000,A,4027.1783,N,00343.5470,W,0.19,67.20,030320,,,*58\r\n";
+//uint8_t nmea_test[BUFFER_SIZE] = "N,00343.5470,W,0.19,67.20,030320,,,*58\r\n$GPGSA,A,1,,*1E\r\n$GNRMC,164004.000,A,4027.1783,";
 
 static uint8_t uart_rx_buffer[UART_RX_BUFFER_SIZE];
 static uint8_t* uart_rx_ptr_head;
@@ -267,7 +268,6 @@ void microSD(void const * argument)
 	  if(fileCreated && new_cmd){
 		  if((osMutexWait(myMutexHandle, 6)) == osOK){
 			  rx = osMessageGet(myQueue01Handle, 0);
-			  //temp_cmd = (uint8_t *) rx.value.p;
 			  new_cmd = 0; // Cleaning the flag
 			  osMutexRelease(myMutexHandle);
 			  f_write(&SDFile, (const void *) rx.value.p, MAX_CMD_SIZE, (void *)&byteswritten);
@@ -296,13 +296,14 @@ void gnss(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-
+	
+	memset((char *) cmd, '\0', MAX_CMD_SIZE);
 	if(read_command(cmd, MAX_CMD_SIZE) == 1){
 		if((osMutexWait(myMutexHandle, 6)) == osOK){
 			osMessagePut(myQueue01Handle, (uint32_t)cmd, 0);
 			new_cmd = 1; //Flag enabled
 			osMutexRelease(myMutexHandle);
-			//memset((char *) cmd, '\0', MAX_CMD_SIZE);
+			
 		}
 	}
     osDelay(100);
