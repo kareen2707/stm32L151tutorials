@@ -1,3 +1,13 @@
+/*
+ * bmx160_reg.c
+ *
+ *  Created on: 19 mar. 2020
+ *      Author: karen@b105.upm.es
+ */
+
+#ifndef BMX160_BMX160_REG_C_
+#define BMX160_BMX160_REG_C_
+
 #include "bmx160_reg.h"
 
 /**
@@ -27,7 +37,7 @@
   * @retval       interface status (MANDATORY: return 0 -> no Error)
   *
   */
-  
+
  int32_t bmx160_read_reg(bmx160_ctx_t* ctx, uint8_t reg, uint8_t* data, uint16_t len)
 {
   int32_t ret;
@@ -56,3 +66,6 @@ void bmx160_delay (bmx160_ctx_t *ctx, uint32_t period)
 {
 	ctx->delay(ctx->handle, period);
 }
+
+
+#endif /* BMX160_BMX160_REG_C_ */
