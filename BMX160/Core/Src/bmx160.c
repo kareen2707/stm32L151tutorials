@@ -178,6 +178,24 @@ int32_t BMX160_Set_PWR_Mode(BMX160_Object_t *pObj){
 	}
 	return res;
 }
+
+/*!
+ * @brief This API gets the power mode of the sensor.
+ */
+int32_t BMX160_Get_PWR_Mode(BMX160_Object_t *pObj, bmx160_pmu_status *pmu_status){
+
+	int32_t res= BMX160_OK;
+	uint8_t power_mode = 0;
+
+	res = bmx160_read_reg(&(pObj->Ctx), BMX160_PMU_STATUS_ADDR, &power_mode, 1);
+	if(res == BMX160_OK){
+		/* Power mode of the accel,gyro,aux sensor is obtained */
+		 pmu_status->aux_pmu_status = BMX160_GET_BITS_POS_0(power_mode, BMX160_MAG_POWER_MODE);
+		 pmu_status->gyro_pmu_status = BMX160_GET_BITS(power_mode, BMX160_GYRO_POWER_MODE);
+		 pmu_status->accel_pmu_status = BMX160_GET_BITS(power_mode, BMX160_ACCEL_POWER_MODE);
+	}
+	return res;
+}
 /*!
  * @brief This API check the accel configuration.
  */
