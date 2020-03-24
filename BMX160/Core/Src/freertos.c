@@ -284,11 +284,14 @@ static int8_t user_spi_read(uint8_t id, uint8_t reg_addr, uint8_t * data, uint16
 	if(HAL_SPI_Transmit(&hspi1, &reg_addr, 1, 10) != HAL_OK){
 		return BMI160_E_COM_FAIL;
 	}
+	osDelay(100);
 	if(HAL_SPI_Receive(&hspi1, data, len, 100) != HAL_OK){
 		ret = BMI160_E_COM_FAIL;
 	}
+	osDelay(100);
 	HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, SET);
-	return ret;
+	osDelay(500);
+	return (int8_t) ret;
 
 }
 
