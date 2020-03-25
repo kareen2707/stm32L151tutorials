@@ -280,19 +280,13 @@ void Callback01(void const * argument)
 static int8_t user_spi_read(uint8_t id, uint8_t reg_addr, uint8_t * data, uint16_t len){
 
 	int32_t ret = BMI160_OK;
+	uint8_t tx_buffer[len];
+	tx_buffer[0] = reg_addr;
 	HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, RESET);
-	if(HAL_SPI_Transmit(&hspi1, &reg_addr, 1, 10) != HAL_OK){
-		return BMI160_E_COM_FAIL;
-	}
-	osDelay(100);
-	if(HAL_SPI_Receive(&hspi1, data, len, 100) != HAL_OK){
-		ret = BMI160_E_COM_FAIL;
-	}
-	osDelay(100);
+	ret = HAL_SPI_TransmitReceive(&hspi1, tx_buffer, data, len, 100);
+	while(HAL_SPI_GetState(&hspi1) == HAL_SPI_STATE_BUSY_TX_RX);
 	HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, SET);
-	osDelay(500);
 	return (int8_t) ret;
-
 }
 
 static int8_t user_spi_write(uint8_t id, uint8_t reg_addr, uint8_t * data, uint16_t len){
