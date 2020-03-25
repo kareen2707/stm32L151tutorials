@@ -27,6 +27,7 @@
 #include "sdio.h"
 #include "spi.h"
 #include "gpio.h"
+#include "bmx160.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -50,13 +51,23 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+struct bmi160_dev sensor;
+struct bmi160_sensor_data accel;
+struct bmi160_sensor_data gyro;
+SPI_HandleTypeDef hspi1;
+static uint8_t tx_done = 0;
+static uint8_t rx_done = 0;
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
+/* USER CODE BEGIN PFP */
 void SystemClock_Config(void);
 void MX_FREERTOS_Init(void);
-/* USER CODE BEGIN PFP */
+static int8_t user_spi_read(uint8_t id, uint8_t reg_addr, uint8_t * data, uint16_t len);
+static int8_t user_spi_write(uint8_t id, uint8_t reg_addr, uint8_t * data, uint16_t len);
+static void user_delay_ms(uint32_t period);
+
 
 /* USER CODE END PFP */
 
@@ -100,13 +111,46 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
+  sensor.id = 0;
+  sensor.interface = BMI160_SPI_INTF;
+  sensor.read = user_spi_read;
+  sensor.write = user_spi_write;
+  sensor.delay_ms = user_delay_ms;
+
+  int8_t rslt = BMI160_OK;
+
+  rslt = bmi160_init(&sensor);
+  if( rslt == BMI160_OK){ // This means the sensor has been found
+
+	  /* Select the Output data rate, range of accelerometer sensor */
+	  sensor.accel_cfg.odr = BMI160_ACCEL_ODR_1600HZ;
+	  sensor.accel_cfg.range = BMI160_ACCEL_RANGE_2G;
+	  sensor.accel_cfg.bw = BMI160_ACCEL_BW_NORMAL_AVG4;
+
+	  /* Select the power mode of accelerometer sensor */
+	  sensor.accel_cfg.power = BMI160_ACCEL_NORMAL_MODE;
+
+	  /* Select the Output data rate, range of Gyroscope sensor */
+	  sensor.gyro_cfg.odr = BMI160_GYRO_ODR_3200HZ;
+	  sensor.gyro_cfg.range = BMI160_GYRO_RANGE_2000_DPS;
+	  sensor.gyro_cfg.bw = BMI160_GYRO_BW_NORMAL_MODE;
+
+	  /* Select the power mode of Gyroscope sensor */
+	  sensor.gyro_cfg.power = BMI160_GYRO_NORMAL_MODE;
+
+	  /* Set the sensor configuration */
+	  rslt = bmi160_set_sens_conf(&sensor);
+	  if(rslt == BMI160_OK){
+  	    		HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
+  	    	}
+  }
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
-  MX_FREERTOS_Init(); 
+  //MX_FREERTOS_Init();
 
   /* Start scheduler */
-  osKernelStart();
+  //osKernelStart();
   
   /* We should never get here as control is now taken by the scheduler */
 
@@ -114,6 +158,9 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
+	  bmi160_get_sensor_data((BMI160_ACCEL_SEL | BMI160_GYRO_SEL), &accel, &gyro, &sensor);
+	  HAL_Delay(500);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -169,6 +216,53 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+static int8_t user_spi_read(uint8_t id, uint8_t reg_addr, uint8_t * data, uint16_t len){
+
+	int32_t ret = BMI160_OK;
+	uint8_t tx_buffer[len];
+	tx_buffer[0] = reg_addr;
+	HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, RESET);
+	ret = HAL_SPI_TransmitReceive(&hspi1, tx_buffer, data, len, 100);
+	while(HAL_SPI_GetState(&hspi1) == HAL_SPI_STATE_BUSY_TX_RX);
+	HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, SET);
+	return (int8_t) ret;
+
+}
+
+static int8_t user_spi_write(uint8_t id, uint8_t reg_addr, uint8_t * data, uint16_t len){
+
+	int32_t ret = BMI160_OK;
+	HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, RESET);
+	if(HAL_SPI_Transmit(&hspi1, &reg_addr, 1, 10) != HAL_OK){
+		return BMI160_E_COM_FAIL;
+	}
+	while(HAL_SPI_GetState(&hspi1) == HAL_SPI_STATE_BUSY_TX);
+	if(HAL_SPI_Transmit(&hspi1, data, len, 100) != HAL_OK){
+		ret = BMI160_E_COM_FAIL;
+	}
+	while(HAL_SPI_GetState(&hspi1) == HAL_SPI_STATE_BUSY_TX);
+	HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, SET);
+	return ret;
+
+}
+
+static void user_delay_ms(uint32_t period){
+
+//	if(osTimerStart(myTimer01Handle, period) != osOK){
+//		while(1){
+//			//TO DEBUG
+//		}
+//	}
+	HAL_Delay(period);
+}
+
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi){
+	tx_done++;
+}
+
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi){
+	rx_done++;
+}
 
 /* USER CODE END 4 */
 
@@ -201,7 +295,9 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-
+	while(1){
+	HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+	}
   /* USER CODE END Error_Handler_Debug */
 }
 
