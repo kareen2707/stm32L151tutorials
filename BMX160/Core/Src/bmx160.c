@@ -1393,7 +1393,7 @@ int8_t bmi160_get_regs(uint8_t reg_addr, uint8_t *data, uint16_t len, const stru
             /* Read the data from the position next to dummy byte */
             while (indx < len)
             {
-                data[indx] = temp_buf[indx];
+                data[indx] = temp_buf[indx+1];
                 indx++;
             }
         }
@@ -1534,10 +1534,11 @@ int8_t bmi160_init(struct bmi160_dev *dev)
         /* Assign chip id as zero */
         dev->chip_id = 0;
 
-        while ((try--) && (dev->chip_id != BMI160_CHIP_ID))
+        while (dev->chip_id != BMI160_CHIP_ID)
         {
             /* Read chip_id */
             rslt = bmi160_get_regs(BMI160_CHIP_ID_ADDR, &dev->chip_id, 1, dev);
+            dev->delay_ms(500);
         }
         if ((rslt == BMI160_OK) && (dev->chip_id == BMI160_CHIP_ID))
         {
