@@ -27,11 +27,10 @@
 #include "sdio.h"
 #include "spi.h"
 #include "gpio.h"
-#include "bmx160.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "bmx160.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -54,13 +53,16 @@
 struct bmi160_dev sensor;
 struct bmi160_sensor_data accel;
 struct bmi160_sensor_data gyro;
+struct bmi160_int_settg int_config;
 SPI_HandleTypeDef hspi1;
-static uint8_t tx_done = 0;
+static uint8_t flag = 0;
 static uint8_t rx_done = 0;
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
+void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 void SystemClock_Config(void);
 void MX_FREERTOS_Init(void);
@@ -141,16 +143,41 @@ int main(void)
 	  /* Set the sensor configuration */
 	  rslt = bmi160_set_sens_conf(&sensor);
 	  if(rslt == BMI160_OK){
+
+		  /* Select the Interrupt channel/pin */
+		  int_config.int_channel = BMI160_INT_CHANNEL_1;// Interrupt channel/pin 1
+
+		  /* Select the Interrupt type */
+		  int_config.int_type = BMI160_ACC_ANY_MOTION_INT;// Choosing Any motion interrupt
+
+		  /* Select the interrupt channel/pin settings */
+		  int_config.int_pin_settg.output_en = BMI160_ENABLE;// Enabling interrupt pins to act as output pin
+		  int_config.int_pin_settg.output_mode = BMI160_DISABLE;// Choosing push-pull mode for interrupt pin
+		  int_config.int_pin_settg.output_type = BMI160_DISABLE;// Choosing active low output
+		  int_config.int_pin_settg.edge_ctrl = BMI160_ENABLE;// Choosing edge triggered output
+		  int_config.int_pin_settg.input_en = BMI160_DISABLE;// Disabling interrupt pin to act as input
+		  int_config.int_pin_settg.latch_dur = BMI160_LATCH_DUR_NONE;// non-latched output
+
+		  /* Select the Any-motion interrupt parameters */
+		  int_config.int_type_cfg.acc_any_motion_int.anymotion_en = BMI160_ENABLE;// 1- Enable the any-motion, 0- disable any-motion
+		  int_config.int_type_cfg.acc_any_motion_int.anymotion_x = BMI160_ENABLE;// Enabling x-axis for any motion interrupt
+		  int_config.int_type_cfg.acc_any_motion_int.anymotion_y = BMI160_ENABLE;// Enabling y-axis for any motion interrupt
+		  int_config.int_type_cfg.acc_any_motion_int.anymotion_z = BMI160_ENABLE;// Enabling z-axis for any motion interrupt
+		  int_config.int_type_cfg.acc_any_motion_int.anymotion_dur = 0;// any-motion duration
+		  int_config.int_type_cfg.acc_any_motion_int.anymotion_thr = 20;// (2-g range) -> (slope_thr) * 3.91 mg, (4-g range) -> (slope_thr) * 7.81 mg, (8-g range) ->(slope_thr) * 15.63 mg, (16-g range) -> (slope_thr) * 31.25 mg
+
+		  /* Set the Any-motion interrupt */
+		  rslt = bmi160_set_int_config(&int_config, &sensor); /* sensor is an instance of the structure bmi160_dev  */
   	    		HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
   	    	}
   }
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
-  //MX_FREERTOS_Init();
+  MX_FREERTOS_Init(); 
 
   /* Start scheduler */
-  //osKernelStart();
+  osKernelStart();
   
   /* We should never get here as control is now taken by the scheduler */
 
@@ -159,7 +186,11 @@ int main(void)
   while (1)
   {
 
-	  bmi160_get_sensor_data((BMI160_ACCEL_SEL | BMI160_GYRO_SEL), &accel, &gyro, &sensor);
+	  //bmi160_get_sensor_data((BMI160_ACCEL_SEL | BMI160_GYRO_SEL), &accel, &gyro, &sensor);
+	  if(flag){ //This will mean any motion has been detected
+		  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
+		  flag = 0;
+	  }
 	  HAL_Delay(500);
     /* USER CODE END WHILE */
 
@@ -256,9 +287,9 @@ static void user_delay_ms(uint32_t period){
 	HAL_Delay(period);
 }
 
-void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi){
-	tx_done++;
-}
+//void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi){
+//	tx_done++;
+//}
 
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi){
 	rx_done++;
@@ -299,6 +330,11 @@ void Error_Handler(void)
 	HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
 	}
   /* USER CODE END Error_Handler_Debug */
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+	flag = 1;
+
 }
 
 #ifdef  USE_FULL_ASSERT

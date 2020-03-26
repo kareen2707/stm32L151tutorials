@@ -1436,7 +1436,7 @@ int8_t bmi160_set_regs(uint8_t reg_addr, uint8_t *data, uint16_t len, const stru
         {
             rslt = dev->write(dev->id, reg_addr, data, len);
 
-            /* Kindly refer bmi160 data sheet section 3.2.4 */
+            /*  BMX160 data sheet section 3.4 */
             dev->delay_ms(1);
 
         }
@@ -1507,7 +1507,7 @@ int8_t bmi160_init(struct bmi160_dev *dev)
 {
     int8_t rslt;
     uint8_t data;
-    uint8_t try = 3;
+    //uint8_t try = 3;
 
     /* Null-pointer check */
     rslt = null_ptr_check(dev);

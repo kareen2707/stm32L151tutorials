@@ -58,9 +58,9 @@ osMutexId myMutex01Handle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-static int8_t user_spi_read(uint8_t id, uint8_t reg_addr, uint8_t * data, uint16_t len);
-static int8_t user_spi_write(uint8_t id, uint8_t reg_addr, uint8_t * data, uint16_t len);
-static void user_delay_ms(uint32_t period);
+//static int8_t user_spi_read(uint8_t id, uint8_t reg_addr, uint8_t * data, uint16_t len);
+//static int8_t user_spi_write(uint8_t id, uint8_t reg_addr, uint8_t * data, uint16_t len);
+//static void user_delay_ms(uint32_t period);
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -230,21 +230,21 @@ void StartDefaultTask(void const * argument)
 void bmx160(void const * argument)
 {
   /* USER CODE BEGIN bmx160 */
-	struct bmi160_dev sensor;
-	sensor.id = 0;
-	sensor.interface = BMI160_SPI_INTF;
-	sensor.read = user_spi_read;
-	sensor.write = user_spi_write;
-	sensor.delay_ms = user_delay_ms;
-
-	//int8_t rslt = BMI160_OK;
-	if(bmi160_init(&sensor) != BMI160_OK){
-		HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, SET);
-	}
+//	struct bmi160_dev sensor;
+//	sensor.id = 0;
+//	sensor.interface = BMI160_SPI_INTF;
+//	sensor.read = user_spi_read;
+//	sensor.write = user_spi_write;
+//	sensor.delay_ms = user_delay_ms;
+//
+//	//int8_t rslt = BMI160_OK;
+//	if(bmi160_init(&sensor) != BMI160_OK){
+//		HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, SET);
+//	}
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+    osDelay(100);
   }
   /* USER CODE END bmx160 */
 }
@@ -271,47 +271,50 @@ void microSD(void const * argument)
 void Callback01(void const * argument)
 {
   /* USER CODE BEGIN Callback01 */
-  
+  HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
   /* USER CODE END Callback01 */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-static int8_t user_spi_read(uint8_t id, uint8_t reg_addr, uint8_t * data, uint16_t len){
-
-	int32_t ret = BMI160_OK;
-	uint8_t tx_buffer[len];
-	tx_buffer[0] = reg_addr;
-	HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, RESET);
-	ret = HAL_SPI_TransmitReceive(&hspi1, tx_buffer, data, len, 100);
-	while(HAL_SPI_GetState(&hspi1) == HAL_SPI_STATE_BUSY_TX_RX);
-	HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, SET);
-	return (int8_t) ret;
-}
-
-static int8_t user_spi_write(uint8_t id, uint8_t reg_addr, uint8_t * data, uint16_t len){
-
-	int32_t ret = BMI160_OK;
-	HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, RESET);
-	if(HAL_SPI_Transmit(&hspi1, &reg_addr, 1, 10) != HAL_OK){
-		return BMI160_E_COM_FAIL;
-	}
-	if(HAL_SPI_Transmit(&hspi1, data, len, 100) != HAL_OK){
-		ret = BMI160_E_COM_FAIL;
-	}
-	HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, SET);
-	return ret;
-
-}
-
-static void user_delay_ms(uint32_t period){
-
-	if(osTimerStart(myTimer01Handle, period) != osOK){
-		while(1){
-			//TO DEBUG
-		}
-	}
-}
+//static int8_t user_spi_read(uint8_t id, uint8_t reg_addr, uint8_t * data, uint16_t len){
+//
+//	int32_t ret = BMI160_OK;
+//	HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, RESET);
+//	if(HAL_SPI_Transmit(&hspi1, &reg_addr, 1, 10) != HAL_OK){
+//		return BMI160_E_COM_FAIL;
+//	}
+//	if(HAL_SPI_Receive(&hspi1, data, len, 100) != HAL_OK){
+//		ret = BMI160_E_COM_FAIL;
+//	}
+//	HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, SET);
+//	return (int8_t)ret;
+//
+//}
+//
+//static int8_t user_spi_write(uint8_t id, uint8_t reg_addr, uint8_t * data, uint16_t len){
+//
+//	int32_t ret = BMI160_OK;
+//	HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, RESET);
+//	if(HAL_SPI_Transmit(&hspi1, &reg_addr, 1, 10) != HAL_OK){
+//		return BMI160_E_COM_FAIL;
+//	}
+//	if(HAL_SPI_Transmit(&hspi1, data, len, 100) != HAL_OK){
+//		ret = BMI160_E_COM_FAIL;
+//	}
+//	HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, SET);
+//	return (int8_t) ret;
+//
+//}
+//
+//static void user_delay_ms(uint32_t period){
+//
+//	if(osTimerStart(myTimer01Handle, period) != osOK){
+//		while(1){
+//			//TO DEBUG
+//		}
+//	}
+//}
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
