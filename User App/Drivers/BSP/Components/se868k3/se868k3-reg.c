@@ -39,7 +39,7 @@ int32_t se868k3_write(se868k3_ctx_t *ctx, uint8_t* data, uint16_t len, uint32_t 
   * @retval       interface status (MANDATORY: return 0 -> no Error)
   *
   */
-int32_t se868k3_read(se868k3_ctx_t* ctx, uint8_t* data, uint16_t len)
+int32_t se868k3_read(se868k3_ctx_t* ctx, uint8_t* data, uint16_t len, char* message)
 {
   int32_t ret;
   ret = ctx->read(ctx->handle, data, len);

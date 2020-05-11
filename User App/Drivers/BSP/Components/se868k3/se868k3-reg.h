@@ -67,7 +67,7 @@ typedef struct {
 
 
 int32_t se868k3_write(se868k3_ctx_t *ctx, uint8_t* data, uint16_t len, uint32_t timeout);
-int32_t se868k3_read(se868k3_ctx_t *ctx, uint8_t* data, uint16_t len);
+int32_t se868k3_read(se868k3_ctx_t *ctx, uint8_t* data, uint16_t len, char * message); //KAREN: added char *message
 int32_t se868k3_TEST(se868k3_ctx_t *ctx);
 int32_t se868k3_SET_port_output_message_intervals(se868k3_ctx_t *ctx);
 int32_t se868k3_SET_output_datarates(se868k3_ctx_t *ctx);

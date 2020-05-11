@@ -10,7 +10,7 @@
 //#include "cmsis_os.h" //karen
 
 static int32_t WriteWrap(void *Handle, uint8_t *pData, uint16_t Length, uint32_t Timeout);
-static int32_t ReadWrap(void *Handle, uint8_t *pData, uint16_t Length);
+static int32_t ReadWrap(void *Handle, uint8_t *pData, uint16_t Length, char *Message); //KAREN: before without char* Message
 
 
 /**
@@ -84,11 +84,13 @@ int32_t SE868K3_Test(SE868K3_Object_t *pObj)
 	return ret;
 }
 
-int32_t SE868K3_Read_Packet(SE868K3_Object_t* pObj, uint8_t len)
-{
-	return se868k3_read(&(pObj->Ctx), pObj->pileUART, len);
+//int32_t SE868K3_Read_Packet(SE868K3_Object_t* pObj, uint8_t len)
+//{
+//	return se868k3_read(&(pObj->Ctx), pObj->pileUART, len);
+//}
+int32_t SE868K3_Read_GNRMC_Pck(SE868K3_Object_t* pObj){
+	return se868k3_read(&(pObj->Ctx), pObj->pileUART, 88, "GNRMC");
 }
-
 
 
 static int32_t WriteWrap(void *Handle, uint8_t *pData, uint16_t Length, uint32_t Timeout){
@@ -97,10 +99,10 @@ static int32_t WriteWrap(void *Handle, uint8_t *pData, uint16_t Length, uint32_t
 	return pObj->IO.Write(pData, Length, Timeout);
 }
 
-static int32_t ReadWrap(void *Handle, uint8_t *pData, uint16_t Length){
+static int32_t ReadWrap(void *Handle, uint8_t *pData, uint16_t Length, char* Message){
 
 	SE868K3_Object_t *pObj = (SE868K3_Object_t *)Handle;
-	return pObj->IO.Read(pData, Length);
+	return pObj->IO.Read(pData, Length, Message);
 
 }
 

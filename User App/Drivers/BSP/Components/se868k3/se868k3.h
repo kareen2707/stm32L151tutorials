@@ -25,7 +25,8 @@
 typedef int32_t (*SE868K3_Init_Func)(void); //Karen: parameters are the pointer and size of the RX buffer
 typedef int32_t (*SE868K3_DeInit_Func)(void);
 typedef int32_t (*SE868K3_Write_Func)(uint8_t *, uint16_t, uint32_t); //Parameters data, size and timeout
-typedef int32_t (*SE868K3_Read_Func)(uint8_t *, uint16_t); //Warning this must be implemented using DMA channel. Parameters: data and size
+//typedef int32_t (*SE868K3_Read_Func)(uint8_t *, uint16_t); //Karen: new version
+typedef int32_t (*SE868K3_Read_Func)(uint8_t *, uint16_t, char *);
 
 typedef struct
   {
@@ -56,8 +57,8 @@ typedef struct
  int32_t SE868K3_Init(SE868K3_Object_t *pObj);
  int32_t SE868K3_DeInit(SE868K3_Object_t *pObj);
  int32_t SE868K3_Test(SE868K3_Object_t *pObj);
- int32_t SE868K3_Read_Packet(SE868K3_Object_t* pObj, uint8_t len);
-
+// int32_t SE868K3_Read_Packet(SE868K3_Object_t* pObj, uint8_t len);
+ int32_t SE868K3_Read_GNRMC_Pck(SE868K3_Object_t* pObj);
 
 
 #ifdef __cplusplus
