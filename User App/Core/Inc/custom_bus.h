@@ -188,8 +188,8 @@ HAL_StatusTypeDef MX_USART_Init(UART_HandleTypeDef* huart);
 int32_t BSP_UART1_Init(void);
 int32_t BSP_UART1_DeInit(void);
 int32_t BSP_UART1_Send(uint8_t *pData, uint16_t Length, uint32_t timeout);
-int32_t BSP_UART1_Recv(uint8_t *pData, uint16_t Length);
-
+//int32_t BSP_UART1_Recv(uint8_t *pData, uint16_t Length);
+int32_t BSP_UART1_Recv(uint8_t *pData, uint16_t Length, char *message); //KAREN: new reception implementation. It should work, but need to be tested
 int32_t BSP_GetTick(void);
 
 HAL_StatusTypeDef MX_ADC_Init(ADC_HandleTypeDef* hadc);

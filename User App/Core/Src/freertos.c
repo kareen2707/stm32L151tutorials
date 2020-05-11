@@ -354,7 +354,8 @@ void SE868K3(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-	  if(SE868K3_Read_Packet(SE868K3_pObj, BUFFER_PCKT_SIZE) == 1){
+	  //if(SE868K3_Read_Packet(SE868K3_pObj, BUFFER_PCKT_SIZE) == 1){
+	  if(SE868K3_Read_GNRMC_Pck(SE868K3_pObj) == 1){
 		  if((osMutexWait(gnssMutexHandle, 6)) == osOK){
 			  osMessagePut(myQueue01Handle, (uint32_t)SE868K3_pObj->pileUART, 0);
 			  new_cmd = 1;

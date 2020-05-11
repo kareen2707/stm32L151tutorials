@@ -1166,8 +1166,8 @@ int32_t BSP_UART1_Send(uint8_t *pData, uint16_t Length, uint32_t timeout){
   * @retval BSP status
   */
 
-int32_t BSP_UART1_Recv(uint8_t *rxData, uint16_t size){ //Karen implementation
-
+//int32_t BSP_UART1_Recv(uint8_t *rxData, uint16_t size){ //Karen implementation
+int32_t BSP_UART1_Recv(uint8_t *pData, uint16_t Length, char *message){
 	//int32_t ret = BSP_ERROR_NONE;
 	uint8_t *new_uart_rx_ptr_head;
 	uint32_t dma_counter = __HAL_DMA_GET_COUNTER(huart1.hdmarx);
@@ -1197,10 +1197,10 @@ int32_t BSP_UART1_Recv(uint8_t *rxData, uint16_t size){ //Karen implementation
 	while(num_stored_bytes){
 		if(((*uart_rx_ptr_tail) != '\r' ) && ((*uart_rx_ptr_tail) != '\n' ) ){
 			if(((*uart_rx_ptr_tail) == ',' ) || ((*uart_rx_ptr_tail) == '*' )){
-				rxData[read_bytes] = '\0'; //Filling null values with spaces
+				pData[read_bytes] = '\0'; //Filling null values with spaces
 			}
 			else{
-				rxData[read_bytes] = *uart_rx_ptr_tail;
+				pData[read_bytes] = *uart_rx_ptr_tail;
 			}
 			read_bytes++;
 			num_stored_bytes--;
@@ -1209,7 +1209,7 @@ int32_t BSP_UART1_Recv(uint8_t *rxData, uint16_t size){ //Karen implementation
 			if(uart_rx_ptr_tail >= &uart_rx_buffer[UART_RX_BUFFER_SIZE]){
 				uart_rx_ptr_tail = uart_rx_buffer;
 			}
-			if(read_bytes >= size){
+			if(read_bytes >= Length){
 				return 2; //error
 			}
 		}
@@ -1222,11 +1222,12 @@ int32_t BSP_UART1_Recv(uint8_t *rxData, uint16_t size){ //Karen implementation
 			if(uart_rx_ptr_tail >= &uart_rx_buffer[UART_RX_BUFFER_SIZE]){
 				uart_rx_ptr_tail = uart_rx_buffer;
 			}
-			if(read_bytes >= size){
+			if(read_bytes >= Length){
 				return 2;
 			}
 
-			if(strcmp((char *) rxData, "$GNRMC")!= 0){
+			//if(strcmp((char *) rxData, "$GNRMC")!= 0){
+			if(strcmp((char *) pData, message)!= 0){ //Karen: new generic reception
 				read_bytes = 0;
 				num_stored_bytes--;
 				uart_rx_ptr_tail++;
