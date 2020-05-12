@@ -14,13 +14,13 @@ static void checksum(char *cmd, char *checksum1, char *checksum2);
 static int32_t createPacket(se868k3_ctx_t *ctx, uint8_t* cmd);
 
 /**
-  * @brief  Write generic device register
+  * @brief  Write generic NMEA command
   *
-  * @param  ctx   read / write interface definitions(ptr)
-  * @param  reg   register to write
-  * @param  data  pointer to data to write in register reg(ptr)
-  * @param  len   number of consecutive register to write
-  * @retval       interface status (MANDATORY: return 0 -> no Error)
+  * @param  ctx   	read / write interface definitions(ptr)
+  * @param  data  	pointer to command to write
+  * @param  len   	command size
+  * @param timeout 	timeout for tx
+  * @retval       	interface status (MANDATORY: return 0 -> no Error)
   *
   */
 int32_t se868k3_write(se868k3_ctx_t *ctx, uint8_t* data, uint16_t len, uint32_t timeout)
@@ -31,18 +31,19 @@ int32_t se868k3_write(se868k3_ctx_t *ctx, uint8_t* data, uint16_t len, uint32_t 
 }
 
 /**
-  * @brief  Read generic device register
+  * @brief  Read generic NMEA packet
   *
-  * @param  ctx   read / write interface definitions(ptr)
-  * @param  data  pointer to buffer that store the data read(ptr)
-  * @param  len   number of consecutive register to read
-  * @retval       interface status (MANDATORY: return 0 -> no Error)
+  * @param  ctx   	read / write interface definitions(ptr)
+  * @param  data 	pointer to buffer that store the packet read(ptr)
+  * @param  len  	packet length
+  * @paraam message NMEA message
+  * @retval       	interface status (MANDATORY: return 0 -> no Error)
   *
   */
 int32_t se868k3_read(se868k3_ctx_t* ctx, uint8_t* data, uint16_t len, char* message)
 {
   int32_t ret;
-  ret = ctx->read(ctx->handle, data, len);
+  ret = ctx->read(ctx->handle, data, len, message);
   return ret;
 }
 

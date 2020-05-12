@@ -55,7 +55,7 @@
   *
   */
 typedef int32_t (*se868k3_ctx_write)(void *, uint8_t*, uint16_t, uint32_t);
-typedef int32_t (*se868k3_ctx_read) (void *, uint8_t*, uint16_t);
+typedef int32_t (*se868k3_ctx_read) (void *, uint8_t*, uint16_t, char *);
 
 typedef struct {
   /** Component mandatory fields **/
