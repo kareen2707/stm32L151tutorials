@@ -49,8 +49,8 @@ void MX_MEMS_Init(void)
   /* USER CODE END SV */
 
   /* USER CODE BEGIN MEMS_Init_PreTreatment */
-	HTS221_pIO.Address = (0x5F<<1);
-	HTS221_pIO.BusType = 0;
+	HTS221_pIO.Address = (uint8_t) (HTS221_I2C_ADDRESS<<1);
+	HTS221_pIO.BusType = HTS221_I2C_BUS;
 	HTS221_pIO.Init = BSP_I2C1_Init;
 	HTS221_pIO.DeInit = BSP_I2C1_DeInit;
 	HTS221_pIO.ReadReg = BSP_I2C1_ReadReg;
