@@ -66,6 +66,7 @@ int32_t bmx160_read_reg(bmx160_ctx_t* ctx, uint8_t reg, uint8_t* data, uint16_t 
   * @param  ctx   read / write interface definitions(ptr)
   * @param  reg   register to write
   * @param  data  pointer to data to write in register reg(ptr)
+  * @param 	mdoe  it determines the writing mode depending on the sensor power mode.
   * @param  len   number of consecutive register to write
   * @retval       interface status (MANDATORY: return 0 -> no Error)
   *
@@ -81,7 +82,7 @@ int32_t bmx160_write_reg(bmx160_ctx_t* ctx, uint8_t reg, uint8_t* data, uint16_t
 	  if (mode){ /* Burst mode only allowed in NORMAL_POWER_MODE*/
 		  ret = ctx->write_reg(ctx->handle, reg, data, len);
 		  /*  BMX160 data sheet section 3.4 */
-		  ctx->delay_ms(ctx->handle, BMX160_ONE_MS_DELAY); // 1ms
+		  ctx->delay_ms(ctx->handle, BMX160_ONE_MS_DELAY);
 	  }
 	  else{
 		  for(; count<len; count++){ // Karen: I think here there is an error in the original driver.

@@ -793,9 +793,8 @@ int32_t BMX160_RegisterBusIO(BMX160_Object_t *pObj, BMX160_IO_t *pIO){
 
 }
 /*!
- *  @brief This API is the entry point for sensor.It performs
- *  the selection of I2C/SPI read mechanism according to the
- *  selected interface and reads the chip-id of bmi160 sensor.
+ *  @brief This API is the entry point for sensor.It performs the selection of I2C/SPI read mechanism according to the
+ *  selected interface and reads the chip-id of BMX160 sensor.
  */
 //int8_t bmi160_init(struct bmi160_dev *dev)
 int32_t BMX160_Init(BMX160_Object_t *pObj)
@@ -1150,7 +1149,7 @@ int32_t BMX160_read_step_counter(BMX160_Object_t *pObj, uint16_t *step_val)
  * register address of auxiliary sensor.
  */
 //int8_t bmi160_aux_read(uint8_t reg_addr, uint8_t *aux_data, uint16_t len, const struct bmi160_dev *dev)
-int32_t BMX160_aux_read(BMX160_Object_t *pObj, uint8_t reg_addr, uint8_t *aux_data, uint16_t len)
+int32_t BMX160_mag_read(BMX160_Object_t *pObj, uint8_t reg_addr, uint8_t *aux_data, uint16_t len)
 {
     int32_t rslt = BMX160_OK;
     uint16_t map_len = 0;
@@ -1178,7 +1177,7 @@ int32_t BMX160_aux_read(BMX160_Object_t *pObj, uint8_t reg_addr, uint8_t *aux_da
  * register address of auxiliary sensor.
  */
 //int8_t bmi160_aux_write(uint8_t reg_addr, uint8_t *aux_data, uint16_t len, const struct bmi160_dev *dev)
-int32_t BMX160_aux_write(BMX160_Object_t *pObj, uint8_t reg_addr, uint8_t *aux_data, uint16_t len)
+int32_t BMX160_mag_write(BMX160_Object_t *pObj, uint8_t reg_addr, uint8_t *aux_data, uint16_t len)
 {
     int32_t rslt = BMX160_OK;
     uint8_t count = 0;
@@ -1217,7 +1216,7 @@ int32_t BMX160_aux_write(BMX160_Object_t *pObj, uint8_t reg_addr, uint8_t *aux_d
  * @brief This API initialize the auxiliary sensor
  * in order to access it.
  */
-int32_t BMX160_aux_init(BMX160_Object_t *pObj)
+int32_t BMX160_mag_init(BMX160_Object_t *pObj)
 {
     int32_t rslt;
     if((pObj->prev_accel_cfg.power == BMX160_ACCEL_NORMAL_MODE) || (pObj->prev_gyro_cfg.power == BMX160_ACCEL_NORMAL_MODE)){
@@ -1242,7 +1241,7 @@ int32_t BMX160_aux_init(BMX160_Object_t *pObj)
  * to BMI160 register address 0x04 to 0x0B
  */
 //int8_t bmi160_set_aux_auto_mode(uint8_t *data_addr, struct bmi160_dev *dev)
-int32_t BMX160_set_aux_auto_mode(BMX160_Object_t *pObj, uint8_t *data_addr)
+int32_t BMX160_set_mag_auto_mode(BMX160_Object_t *pObj, uint8_t *data_addr)
 {
     int32_t rslt;
     uint8_t mode = 0;
@@ -1265,7 +1264,7 @@ int32_t BMX160_set_aux_auto_mode(BMX160_Object_t *pObj, uint8_t *data_addr)
             {
             	/* Disable the aux. manual mode, i.e aux.sensor is in auto-mode (data-mode) */
                 pObj->aux_cfg.manual_enable = BMX160_DISABLE;
-                rslt = BMX160_config_aux_mode(pObj);
+                rslt = BMX160_config_mag_mode(pObj);
                 /*  Auxiliary sensor data is obtained in auto mode from this point */
             }
         }
@@ -1282,7 +1281,7 @@ int32_t BMX160_set_aux_auto_mode(BMX160_Object_t *pObj, uint8_t *data_addr)
  * @brief This API configures the 0x4C register and settings like auxiliary sensor manual enable/ disable and aux burst read length.
  */
 //int8_t bmi160_config_aux_mode(const struct bmi160_dev *dev)
-int32_t BMX160_config_aux_mode(BMX160_Object_t *pObj)
+int32_t BMX160_config_mag_mode(BMX160_Object_t *pObj)
 {
     int32_t rslt;
     uint8_t aux_if[2] = { (uint8_t)(pObj->aux_cfg.aux_i2c_addr * 2), 0 };
@@ -1292,7 +1291,7 @@ int32_t BMX160_config_aux_mode(BMX160_Object_t *pObj)
 //            mode = 1;
 //    }
 
-    rslt = bmx160_read_reg(&(pObj->Ctx), BMX160_AUX_IF_1_ADDR, &aux_if[1], 1);
+    rslt = bmx160_read_reg(&(pObj->Ctx), BMX160_AUX_IF_0_ADDR, &aux_if[1], 1);  //Karen: in BMI the address is AUX_IF_1_ADDR
     if (rslt == BMX160_OK)
     {
         /* update the Auxiliary interface to manual/auto mode */
@@ -1315,7 +1314,7 @@ int32_t BMX160_config_aux_mode(BMX160_Object_t *pObj)
  * data of 8 bytes from BMI160 register address 0x04 to 0x0B
  */
 //int8_t bmi160_read_aux_data_auto_mode(uint8_t *aux_data, const struct bmi160_dev *dev)
-int32_t BMX160_read_aux_data_auto_mode(BMX160_Object_t *pObj, uint8_t *aux_data)
+int32_t BMX160_read_mag_data_auto_mode(BMX160_Object_t *pObj, uint8_t *aux_data)
 {
     int32_t rslt;
 
@@ -1660,7 +1659,7 @@ int32_t BMX160_extract_gyro(BMX160_Object_t *pObj, bmx160_sensor_data *gyro_data
  *  the "aux_data" structure instance.
  */
 //int8_t bmi160_extract_aux(bmi160_aux_data *aux_data, uint8_t *aux_len, struct bmi160_dev const *dev)
-int32_t BMX160_extract_aux(BMX160_Object_t *pObj, bmx160_aux_data *aux_data, uint8_t *aux_len)
+int32_t BMX160_extract_mag(BMX160_Object_t *pObj, bmx160_aux_data *aux_data, uint8_t *aux_len)
 {
     int32_t rslt = 0;
     uint16_t data_index = 0;
@@ -3636,7 +3635,7 @@ static int32_t config_aux_settg(BMX160_Object_t *pObj)
     if (rslt == BMX160_OK)
     {
         /* Configures the auxiliary interface settings */
-        rslt = BMX160_config_aux_mode(pObj);
+        rslt = BMX160_config_mag_mode(pObj);
     }
 
     return rslt;
@@ -5324,6 +5323,12 @@ static int32_t WriteRegWrap(void *Handle, uint8_t Reg, uint8_t *pData, uint16_t 
     return pObj->IO.WriteReg(pObj->IO.Address, (Reg & BMX160_SPI_WR_MASK), pData, Length);
   }
 }
+
+/**
+ * @brief  Wrap Delay component function to Bus IO function
+ * @param  Handle the device handler
+ * @param  Period in milliseconds to wait
+ */
 
 static void DelayWrap(void *Handle, uint32_t Period)
 {

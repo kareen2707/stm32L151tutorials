@@ -61,7 +61,6 @@ extern "C" {
 
 typedef int32_t (*BMX160_Init_Func)(void);
 typedef int32_t (*BMX160_DeInit_Func)(void);
-typedef int32_t (*BMX160_GetTick_Func)(void);
 typedef int32_t (*BMX160_WriteReg_Func)(uint8_t, uint8_t, uint8_t *, uint16_t);
 typedef int32_t (*BMX160_ReadReg_Func)(uint8_t, uint8_t, uint8_t *, uint16_t);
 typedef void 	(*BMX160_Delayms_Func)(uint32_t);
@@ -210,9 +209,8 @@ int8_t bmi160_get_regs(uint8_t reg_addr, uint8_t *data, uint16_t len, const stru
  * of sensor.
  *
  * @param[in] reg_addr  : Register address from where the data to be written.
- * @param[in] data      : Pointer to data buffer which is to be written
- * in the sensor.
- * @param[in] len       : No of bytes of data to write..
+ * @param[in] data      : Pointer to data buffer which is to be written in the sensor.
+ * @param[in] len       : No of bytes of data to write.
  * @param[in] dev       : Structure instance of bmi160_dev.
  *
  * @return Result of API execution status
@@ -221,24 +219,18 @@ int8_t bmi160_get_regs(uint8_t reg_addr, uint8_t *data, uint16_t len, const stru
 int8_t bmi160_set_regs(uint8_t reg_addr, uint8_t *data, uint16_t len, const struct bmi160_dev *dev);
 
 /*!
- * @brief This API resets and restarts the device.
- * All register values are overwritten with default parameters.
+ * @brief This API resets and restarts the device. All register values are overwritten with default parameters.
  *
- * @param[in] dev  : Structure instance of bmi160_dev.
- *
- * @return Result of API execution status
+ * @param[in] pObj  : BMX160 object.
  * @retval zero -> Success / -ve value -> Error.
  */
 //int8_t bmi160_soft_reset(struct bmi160_dev *dev);
 int32_t BMX160_soft_reset(BMX160_Object_t *pObj);
 /*!
- * @brief This API configures the power mode, range and bandwidth
- * of sensor.
+ * @brief This API configures the power mode, range and bandwidth of sensor.
  *
- * @param[in] dev    : Structure instance of bmi160_dev.
+ * @param[in] pObj  : BMX160 object.
  * @note : Refer user guide for detailed info.
- *
- * @return Result of API execution status
  * @retval zero -> Success / -ve value -> Error.
  */
 //int8_t bmi160_set_sens_conf(struct bmi160_dev *dev);
@@ -247,9 +239,7 @@ int32_t BMX160_set_sens_conf(BMX160_Object_t *pObj);
 /*!
  * @brief This API sets the power mode of the sensor.
  *
- * @param[in] dev  : Structure instance of bmi160_dev.
- *
- * @return Result of API execution status
+ * @param[in] pObj  : BMX160 object.
  * @retval zero -> Success / -ve value -> Error.
  */
 //int8_t bmi160_set_power_mode(struct bmi160_dev *dev);
@@ -259,7 +249,7 @@ int32_t BMX160_set_power_mode(BMX160_Object_t *pObj);
  * @brief This API gets the power mode of the sensor.
  *
  * @param[in] power_mode  : Power mode of the sensor
- * @param[in] dev         : Structure instance of bmi160_dev
+ * @param[in] pObj  : BMX160 object.
  *
  * power_mode Macros possible values for pmu_status->aux_pmu_status :
  *  - BMI160_AUX_PMU_SUSPEND
@@ -276,21 +266,18 @@ int32_t BMX160_set_power_mode(BMX160_Object_t *pObj);
  *  - BMI160_ACCEL_PMU_NORMAL
  *  - BMI160_ACCEL_PMU_LOW_POWER
  *
- * @return Result of API execution status
  * @retval zero -> Success / -ve value -> Error.
  */
 //int8_t bmi160_get_power_mode(bmi160_pmu_status *pmu_status, const struct bmi160_dev *dev);
 int32_t BMX160_get_power_mode(BMX160_Object_t *pObj, bmx160_pmu_status *pmu_status);
 /*!
- * @brief This API reads sensor data, stores it in
- * the bmi160_sensor_data structure pointer passed by the user.
- * The user can ask for accel data ,gyro data or both sensor
- * data using bmi160_select_sensor enum
+ * @brief This API reads sensor data, stores it in the bmx160_sensor_data structure pointer passed by the user.
+ * The user can ask for accel data ,gyro data or both sensor data using bmx160_select_sensor enum
  *
- * @param[in] select_sensor    : enum to choose accel,gyro or both sensor data
- * @param[out] accel    : Structure pointer to store accel data
- * @param[out] gyro     : Structure pointer to store gyro data
- * @param[in] dev       : Structure instance of bmi160_dev.
+ * @param[in] select_sensor    : enum to choose accel, gyro or both sensor data
+ * @param[out] accel    	: Structure pointer to store accel data
+ * @param[out] gyro     	: Structure pointer to store gyro data
+ * @param[in] pObj  		: BMX160 object.
  * @note : Refer user guide for detailed info.
  *
  * @return Result of API execution status
@@ -300,13 +287,12 @@ int32_t BMX160_get_power_mode(BMX160_Object_t *pObj, bmx160_pmu_status *pmu_stat
 int32_t BMX160_get_sensor_data(BMX160_Object_t *pObj, uint8_t select_sensor, bmx160_sensor_data *accel, bmx160_sensor_data *gyro);
 /*!
  * @brief This API configures the necessary interrupt based on
- *  the user settings in the bmi160_int_settg structure instance.
+ *  the user settings in the bmx160_int_settg structure instance.
  *
  * @param[in] int_config  : Structure instance of bmi160_int_settg.
- * @param[in] dev         : Structure instance of bmi160_dev.
+ * @param[in] pObj  : BMX160 object.
  * @note : Refer user guide for detailed info.
  *
- * @return Result of API execution status
  * @retval zero -> Success / -ve value -> Error
  */
 //int8_t bmi160_set_int_config(bmi160_int_settg *int_config, struct bmi160_dev *dev);
@@ -315,10 +301,9 @@ int32_t BMX160_set_int_config(BMX160_Object_t *pObj, bmx160_int_settg *int_confi
  * @brief This API enables the step counter feature.
  *
  * @param[in] step_cnt_enable   : value to enable or disable
- * @param[in] dev       : Structure instance of bmi160_dev.
+ * @param[in] pObj  : BMX160 object.
  * @note : Refer user guide for detailed info.
  *
- * @return Result of API execution status
  * @retval zero -> Success / -ve value -> Error
  */
 //int8_t bmi160_set_step_counter(uint8_t step_cnt_enable, const struct bmi160_dev *dev);
@@ -327,72 +312,63 @@ int32_t BMX160_set_step_counter(BMX160_Object_t *pObj, uint8_t step_cnt_enable);
  * @brief This API reads the step counter value.
  *
  * @param[in] step_val    : Pointer to store the step counter value.
- * @param[in] dev         : Structure instance of bmi160_dev.
+ * @param[in] pObj  : BMX160 object.
  * @note : Refer user guide for detailed info.
  *
- * @return Result of API execution status
  * @retval zero -> Success / -ve value -> Error
  */
 //int8_t bmi160_read_step_counter(uint16_t *step_val, const struct bmi160_dev *dev);
 int32_t BMX160_read_step_counter(BMX160_Object_t *pObj, uint16_t *step_val);
 /*!
- * @brief This API reads the mention no of byte of data from the given
- * register address of auxiliary sensor.
+ * @brief This API reads the mention no of byte of data from the given register address of magnetometer sensor.
  *
  * @param[in] reg_addr    : Address of register to read.
  * @param[in] aux_data    : Pointer to store the read data.
  * @param[in] len     : No of bytes to read.
- * @param[in] dev         : Structure instance of bmi160_dev.
+ * @param[in] pObj  : BMX160 object.
  * @note : Refer user guide for detailed info.
  *
- * @return Result of API execution status
  * @retval zero -> Success / -ve value -> Error
  */
 //int8_t bmi160_aux_read(uint8_t reg_addr, uint8_t *aux_data, uint16_t len, const struct bmi160_dev *dev);
-int32_t BMX160_aux_read(BMX160_Object_t *pObj, uint8_t reg_addr, uint8_t *aux_data, uint16_t len);
+int32_t BMX160_mag_read(BMX160_Object_t *pObj, uint8_t reg_addr, uint8_t *aux_data, uint16_t len);
 /*!
  * @brief This API writes the mention no of byte of data to the given
  * register address of auxiliary sensor.
  *
  * @param[in] reg_addr    : Address of register to write.
  * @param[in] aux_data    : Pointer to write data.
- * @param[in] len     : No of bytes to write.
- * @param[in] dev         : Structure instance of bmi160_dev.
+ * @param[in] len     	  : No of bytes to write.
+ * @param[in] pObj  	  : BMX160 object.
  * @note : Refer user guide for detailed info.
  *
- * @return Result of API execution status
  * @retval zero -> Success / -ve value -> Error
  */
 //int8_t bmi160_aux_write(uint8_t reg_addr, uint8_t *aux_data, uint16_t len, const struct bmi160_dev *dev);
-int32_t BMX160_aux_write(BMX160_Object_t *pObj, uint8_t reg_addr, uint8_t *aux_data, uint16_t len);
+int32_t BMX160_mag_write(BMX160_Object_t *pObj, uint8_t reg_addr, uint8_t *aux_data, uint16_t len);
 /*!
- * @brief This API initialize the auxiliary sensor
+ * @brief This API initialize the magnetometer sensor
  * in order to access it.
  *
- * @param[in] dev         : Structure instance of bmi160_dev.
+ * @param[in] pObj  : BMX160 object.
  * @note : Refer user guide for detailed info.
  *
- * @return Result of API execution status
  * @retval zero -> Success / -ve value -> Error
  */
-int32_t BMX160_aux_init(BMX160_Object_t *pObj);
+int32_t BMX160_mag_init(BMX160_Object_t *pObj);
 
 /*!
- * @brief This API is used to setup the auxiliary sensor of bmi160 in auto mode
- * Thus enabling the auto update of 8 bytes of data from auxiliary sensor
- * to BMI160 register address 0x04 to 0x0B
+ * @brief This API is used to setup the auxiliary sensor of bmx160 in auto mode
+ * Thus enabling the auto update of 8 bytes of data from magnetometer sensor to BMX160 register address 0x04 to 0x0B
  *
- * @param[in] data_addr    : Starting address of aux. sensor's data register
- *                           (BMI160 registers 0x04 to 0x0B will be updated
- *                           with 8 bytes of data from auxiliary sensor
- *                           starting from this register address.)
- * @param[in] dev      : Structure instance of bmi160_dev.
+ * @param[in] data_addr    : Starting address of mag. sensor's data register (BMX160 registers 0x04 to 0x0B will be updated
+ *                           with 8 bytes of data from auxiliary sensor starting from this register address.)
+ * @param[in] pObj  : BMX160 object.
  *
- * @note : Set the value of auxiliary polling rate by setting
- *         dev->aux_cfg.aux_odr to the required value from the table
+ * @note : Set the value of auxiliary polling rate by setting pObj->aux_cfg.aux_odr to the required value from the table
  *         before calling this API
  *
- *   dev->aux_cfg.aux_odr  |   Auxiliary ODR (Hz)
+ *   pObj->aux_cfg.aux_odr  |   Auxiliary ODR (Hz)
  *  -----------------------|-----------------------
  *  BMI160_AUX_ODR_0_78HZ  |        25/32
  *  BMI160_AUX_ODR_1_56HZ  |        25/16
@@ -408,42 +384,39 @@ int32_t BMX160_aux_init(BMX160_Object_t *pObj);
  *
  * @note : Other values of  dev->aux_cfg.aux_odr are reserved and not for use
  *
- * @return Result of API execution status
  * @retval zero -> Success  / -ve value -> Error
  */
 //int8_t bmi160_set_aux_auto_mode(uint8_t *data_addr, struct bmi160_dev *dev);
-int32_t BMX160_set_aux_auto_mode(BMX160_Object_t *pObj, uint8_t *data_addr);
+int32_t BMX160_set_mag_auto_mode(BMX160_Object_t *pObj, uint8_t *data_addr);
 /*!
- * @brief This API configures the 0x4C register and settings like
+ * @brief This API configures the MAG_IF_1 register and settings like
  * Auxiliary sensor manual enable/ disable and aux burst read length.
  *
- * @param[in] dev    : Structure instance of bmi160_dev.
+ * @param[in] pObj  : BMX160 object.
  *
- * @return Result of API execution status
  * @retval zero -> Success  / -ve value -> Error
  */
 //int8_t bmi160_config_aux_mode(const struct bmi160_dev *dev);
-int32_t BMX160_config_aux_mode(BMX160_Object_t *pObj);
+int32_t BMX160_config_mag_mode(BMX160_Object_t *pObj);
 
 /*!
  * @brief This API is used to read the raw uncompensated auxiliary sensor
- * data of 8 bytes from BMI160 register address 0x04 to 0x0B
+ * data of 8 bytes from BMX160 register address 0x04 to 0x0B
  *
  * @param[in] aux_data       : Pointer to user array of length 8 bytes
  *                             Ensure that the aux_data array is of
  *                             length 8 bytes
- * @param[in] dev        : Structure instance of bmi160_dev
+ * @param[in] pObj  : BMX160 object.
  *
- * @return Result of API execution status
  * @retval zero -> Success  / -ve value -> Error
  */
 //int8_t bmi160_read_aux_data_auto_mode(uint8_t *aux_data, const struct bmi160_dev *dev);
-int32_t BMX160_read_aux_data_auto_mode(BMX160_Object_t *pObj, uint8_t *aux_data);
+int32_t BMX160_read_mag_data_auto_mode(BMX160_Object_t *pObj, uint8_t *aux_data);
 /*!
- * @brief This is used to perform self test of accel/gyro of the BMI160 sensor
+ * @brief This is used to perform self test of accel/gyro of the BMX160 sensor
  *
  * @param[in] select_sensor  : enum to choose accel or gyro for self test
- * @param[in] dev            : Structure instance of bmi160_dev
+ * @param[in] pObj  : BMX160 object.
  *
  * @note self test can be performed either for accel/gyro at any instant.
  *
@@ -477,12 +450,11 @@ int32_t BMX160_perform_self_test(BMX160_Object_t *pObj, uint8_t select_sensor);
  *  as mentioned in the readme.md
  *
  *  @note User must specify the number of bytes to read from the FIFO in
- *  dev->fifo->length , It will be updated by the number of bytes actually
+ *  pObj->fifo->length , It will be updated by the number of bytes actually
  *  read from FIFO after calling this API
  *
- *  @param[in] dev     : Structure instance of bmi160_dev.
+ *  @param[in] pObj  : BMX160 object.
  *
- *  @return Result of API execution status
  *  @retval zero -> Success / -ve value -> Error
  *
  */
@@ -531,9 +503,9 @@ int32_t BMX160_set_fifo_flush(BMX160_Object_t *pObj);
  */
 //int8_t bmi160_set_fifo_config(uint8_t config, uint8_t enable, struct bmi160_dev const *dev);
 int32_t BMX160_set_fifo_config(BMX160_Object_t *pObj, uint8_t config, uint8_t enable);
-/*! @brief This API is used to configure the down sampling ratios of
- *  the accel and gyro data for FIFO.Also, it configures filtered or
- *  pre-filtered data for the fifo for accel and gyro.
+
+/*! @brief This API is used to configure the down sampling ratios of the accel and gyro data for FIFO.
+ *  Also, it configures filtered or pre-filtered data for the fifo for accel and gyro.
  *
  *  @param[in] fifo_down : variable used to specify the FIFO down
  *  configurations which are to be enabled or disabled in the sensor.
@@ -578,11 +550,10 @@ int32_t BMX160_set_fifo_config(BMX160_Object_t *pObj, uint8_t config, uint8_t en
  *  @note : By ORing the above mentioned macros, the user can select
  *  the required FIFO down config settings
  *
- *  @param[in] dev : Structure instance of bmi160_dev.
+ *  @param[in] pObj  : BMX160 object.
  *
  *  @return status of bus communication result
- *  @retval 0 -> Success
- *  @retval Any non zero value -> Fail
+ *  @retval 0 -> Success. Any non zero value -> Fail
  *
  */
 //int8_t bmi160_set_fifo_down(uint8_t fifo_down, const struct bmi160_dev *dev);
@@ -594,107 +565,97 @@ int32_t BMX160_set_fifo_down(BMX160_Object_t *pObj, uint8_t fifo_down);
  *  equal or above the watermark level and units of watermark is 4 bytes.
  *
  *  @param[in]  fifo_wm        : Variable used to set the FIFO water mark level
- *  @param[in]  dev            : Structure instance of bmi160_dev
+ *  @param[in] pObj  : BMX160 object.
  *
  *  @return Result of API execution status
- *  @retval 0 -> Success
- *  @retval Any non zero value -> Fail
+ *  @retval 0 -> Success. Any non zero value -> Fail
  *
  */
 //int8_t bmi160_set_fifo_wm(uint8_t fifo_wm, const struct bmi160_dev *dev);
 int32_t BMX160_set_fifo_wm(BMX160_Object_t *pObj, uint8_t fifo_wm);
 /*!
- *  @brief This API parses and extracts the accelerometer frames from
- *  FIFO data read by the "bmi160_get_fifo_data" API and stores it in
- *  the "accel_data" structure instance.
+ *  @brief This API parses and extracts the accelerometer frames from  FIFO data read
+ *  by the "bmx160_get_fifo_data" API and stores it in the "accel_data" structure instance.
  *
- *  @note The bmi160_extract_accel API should be called only after
- *  reading the FIFO data by calling the bmi160_get_fifo_data() API.
+ *  @note BMX160_extract_accel API should be called only after
+ *  reading the FIFO data by calling the bmx160_get_fifo_data() API.
  *
- *  @param[out] accel_data    : Structure instance of bmi160_sensor_data
+ *  @param[out] accel_data    : Structure instance of bmx160_sensor_data
  *                              where the accelerometer data in FIFO is stored.
  *  @param[in,out] accel_length  : Number of valid accelerometer frames
  *                              (x,y,z axes data) read out from fifo.
- *  @param[in] dev            : Structure instance of bmi160_dev.
+ *  @param[in] pObj  : BMX160 object.
  *
  *  @note accel_length is updated with the number of valid accelerometer
  *  frames extracted from fifo (1 accel frame   = 6 bytes) at the end of
  *  execution of this API.
  *
  *  @return Result of API execution status
- *  @retval 0 -> Success
- *  @retval Any non zero value -> Fail
+ *  @retval 0 -> Success. Any non zero value -> Fail
  *
  */
 //int8_t bmi160_extract_accel(bmi160_sensor_data *accel_data, uint8_t *accel_length, struct bmi160_dev const *dev);
-int32_t BMX160_extract_gyro(BMX160_Object_t *pObj, bmx160_sensor_data *gyro_data, uint8_t *gyro_length);
+int32_t BMX160_extract_accel(BMX160_Object_t *pObj, bmx160_sensor_data *accel_data, uint8_t *accel_length);
 /*!
- *  @brief This API parses and extracts the gyro frames from
- *  FIFO data read by the "bmi160_get_fifo_data" API and stores it in
- *  the "gyro_data" structure instance.
+ *  @brief This API parses and extracts the gyro frames from FIFO data read
+ *  by the "bmi160_get_fifo_data" API and stores it in the "gyro_data" structure instance.
  *
- *  @note The bmi160_extract_gyro API should be called only after
- *  reading the FIFO data by calling the bmi160_get_fifo_data() API.
+ *  @note BMX160_extract_gyro API should be called only after
+ *  reading the FIFO data by calling the bmx160_get_fifo_data() API.
  *
  *  @param[out] gyro_data    : Structure instance of bmi160_sensor_data
  *                             where the gyro data in FIFO is stored.
  *  @param[in,out] gyro_length  : Number of valid gyro frames
  *                             (x,y,z axes data) read out from fifo.
- *  @param[in] dev           : Structure instance of bmi160_dev.
+ *  @param[in] dev           : Structure instance of bmx160_dev.
  *
  *  @note gyro_length is updated with the number of valid gyro
  *  frames extracted from fifo (1 gyro frame   = 6 bytes) at the end of
  *  execution of this API.
  *
  *  @return Result of API execution status
- *  @retval 0 -> Success
- *  @retval Any non zero value -> Fail
+ *  @retval 0 -> Success. Any non zero value -> Fail
  *
  */
 //int8_t bmi160_extract_gyro(bmi160_sensor_data *gyro_data, uint8_t *gyro_length, struct bmi160_dev const *dev);
 int32_t BMX160_extract_gyro(BMX160_Object_t *pObj, bmx160_sensor_data *gyro_data, uint8_t *gyro_length);
 /*!
- *  @brief This API parses and extracts the aux frames from
- *  FIFO data read by the "bmi160_get_fifo_data" API and stores it in
- *  the bmi160_aux_data structure instance.
+ *  @brief This API parses and extracts the magnetometer frames from FIFO data read
+ *  by the "bmi160_get_fifo_data" API and stores it in the bmx160_aux_data structure instance.
  *
  *  @note The bmi160_extract_aux API should be called only after
  *  reading the FIFO data by calling the bmi160_get_fifo_data() API.
  *
- *  @param[out] aux_data    : Structure instance of bmi160_aux_data
+ *  @param[out] aux_data    : Structure instance of bmx160_aux_data
  *                            where the aux data in FIFO is stored.
  *  @param[in,out] aux_len  : Number of valid aux frames (8bytes)
  *                            read out from FIFO.
- *  @param[in] dev          : Structure instance of bmi160_dev.
+ *  @param[in] pObj  : BMX160 object.
  *
  *  @note aux_len is updated with the number of valid aux
  *  frames extracted from fifo (1 aux frame = 8 bytes) at the end of
  *  execution of this API.
  *
  *  @return Result of API execution status
- *  @retval 0 -> Success
- *  @retval Any non zero value -> Fail
+ *  @retval 0 -> Success. Any non zero value -> Fail
  *
  */
 //int8_t bmi160_extract_aux(bmi160_aux_data *aux_data, uint8_t *aux_len, struct bmi160_dev const *dev);
-int32_t BMX160_extract_aux(BMX160_Object_t *pObj, bmx160_aux_data *aux_data, uint8_t *aux_len);
+int32_t BMX160_extract_mag(BMX160_Object_t *pObj, bmx160_aux_data *aux_data, uint8_t *aux_len);
 /*!
- *  @brief This API starts the FOC of accel and gyro
+ *  @brief This API starts the Fast Offset Compensation of accel and gyro
  *
  *  @note FOC should not be used in low-power mode of sensor
  *
  *  @note Accel FOC targets values of +1g , 0g , -1g
  *  Gyro FOC always targets value of 0 dps
  *
- *  @param[in] foc_conf    : Structure instance of bmi160_foc_conf which
- *                                   has the FOC configuration
- *  @param[in,out] offset  : Structure instance to store Offset
- *                                   values read from sensor
- *  @param[in] dev         : Structure instance of bmi160_dev.
+ *  @param[in] foc_conf    : Structure instance of bmx160_foc_conf which has the FOC configuration
+ *  @param[in,out] offset  : Structure instance to store Offset values read from sensor
+ *  @param[in] pObj  : BMX160 object.
  *
- *  @note Pre-requisites for triggering FOC in accel , Set the following,
- *   Enable the acc_off_en
- *       Ex :  foc_conf.acc_off_en = BMI160_ENABLE;
+ *  @note Pre-requisites for triggering FOC in accel , Set the following, Enable the acc_off_en
+ *       Ex :  foc_conf.acc_off_en = BMX160_ENABLE;
  *
  *   Set the desired target values of FOC to each axes (x,y,z) by using the
  *   following macros
@@ -714,21 +675,18 @@ int32_t BMX160_extract_aux(BMX160_Object_t *pObj, bmx160_aux_data *aux_data, uin
  *        foc_conf.gyro_off_en = BMI160_ENABLE;
  *
  *  @return Result of API execution status
- *  @retval 0 -> Success
- *  @retval Any non zero value -> Fail
+ *  @retval 0 -> Success. Any non zero value -> Fail
  */
 //int8_t bmi160_start_foc(const bmi160_foc_conf *foc_conf, bmi160_offsets *offset, struct bmi160_dev const *dev);
 int32_t BMX160_start_foc(BMX160_Object_t *pObj, const bmx160_foc_conf *foc_conf, bmx160_offsets *offset);
 /*!
  *  @brief This API reads and stores the offset values of accel and gyro
  *
- *  @param[in,out] offset : Structure instance of bmi160_offsets in which
- *                          the offset values are read and stored
- *  @param[in] dev        : Structure instance of bmi160_dev.
+ *  @param[in,out] offset : Structure instance of bmx160_offsets in which the offset values are read and stored
+ *  @param[in] pObj  : BMX160 object.
  *
  *  @return Result of API execution status
- *  @retval 0 -> Success
- *  @retval Any non zero value -> Fail
+ *  @retval 0 -> Success. Any non zero value -> Fail
  */
 //int8_t bmi160_get_offsets(bmi160_offsets *offset, const struct bmi160_dev *dev);
 int32_t BMX160_get_offsets(BMX160_Object_t *pObj, bmx160_offsets *offset);
@@ -736,37 +694,34 @@ int32_t BMX160_get_offsets(BMX160_Object_t *pObj, bmx160_offsets *offset);
  *  @brief This API writes the offset values of accel and gyro to
  *  the sensor but these values will be reset on POR or soft reset.
  *
- *  @param[in] foc_conf    : Structure instance of bmi160_foc_conf which
- *                                   has the FOC configuration
+ *  @param[in] foc_conf    : Structure instance of bmi160_foc_conf which has the FOC configuration
  *  @param[in] offset      : Structure instance in which user updates offset
  *                            values which are to be written in the sensor
- *  @param[in] dev         : Structure instance of bmi160_dev.
+ *  @param[in] pObj  : BMX160 object.
  *
  *  @note Offsets can be set by user like offset->off_acc_x = 10;
  *  where 1LSB = 3.9mg and for gyro 1LSB = 0.061degrees/second
  *
- * @note BMI160 offset values for xyz axes of accel should be within range of
+ * @note BMX160 offset values for xyz axes of accel should be within range of
  *  BMI160_ACCEL_MIN_OFFSET (-128) to BMI160_ACCEL_MAX_OFFSET (127)
  *
- * @note BMI160 offset values for xyz axes of gyro should be within range of
+ * @note BMX160 offset values for xyz axes of gyro should be within range of
  *  BMI160_GYRO_MIN_OFFSET (-512) to BMI160_GYRO_MAX_OFFSET (511)
  *
  *  @return Result of API execution status
- *  @retval 0 -> Success
- *  @retval Any non zero value -> Fail
+ *  @retval 0 -> Success.Any non zero value -> Fail
  */
 //int8_t bmi160_set_offsets(const bmi160_foc_conf *foc_conf, const bmi160_offsets *offset, struct bmi160_dev const *dev);
 int32_t BMX160_set_offsets(BMX160_Object_t *pObj, const bmx160_foc_conf *foc_conf, const bmx160_offsets *offset);
 
 /*!
- *  @brief This API writes the image registers values to NVM which is
+ *  @brief This API writes the image registers values to Non-Volatile Memory which is
  *  stored even after POR or soft reset
  *
- *  @param[in] dev         : Structure instance of bmi160_dev.
+ *  @param[in] pObj  : BMX160 object.
  *
  *  @return Result of API execution status
- *  @retval 0 -> Success
- *  @retval Any non zero value -> Fail
+ *  @retval 0 -> Success. Any non zero value -> Fail
  */
 //int8_t bmi160_update_nvm(struct bmi160_dev const *dev);
 int32_t BMX160_update_nvm(BMX160_Object_t *pObj);
@@ -778,11 +733,10 @@ int32_t BMX160_update_nvm(BMX160_Object_t *pObj);
  *  interrupt status bits.
  *  @param[in] int_status           : pointer variable to get the interrupt status
  *  from the sensor.
- *  param[in] dev                   : Structure instance of bmi160_dev.
+ *  @param[in] pObj  : BMX160 object.
  *
  *  @return Result of API execution status
- *  @retval 0 -> Success
- *  @retval Any non zero value -> Fail
+ *  @retval 0 -> Success. Any non zero value -> Fail
  */
 //int8_t bmi160_get_int_status(enum bmi160_int_status_sel int_status_sel, bmi160_int_status *int_status, struct bmi160_dev const *dev);
 int32_t BMX160_get_int_status(BMX160_Object_t *pObj, enum bmx160_int_status_sel int_status_sel, bmx160_int_status *int_status);
