@@ -298,9 +298,9 @@ void HTS221(void const * argument)
 	HTS221_pIO.BusType = HTS221_I2C_BUS;
 	HTS221_pIO.Init = BSP_I2C1_Init;
 	HTS221_pIO.DeInit = BSP_I2C1_DeInit;
-	HTS221_pIO.ReadReg = BSP_I2C1_ReadReg;
-	HTS221_pIO.WriteReg = BSP_I2C1_WriteReg;
-	HTS221_pIO.GetTick = BSP_GetTick;
+	HTS221_pIO.ReadReg = BSP_I2C1_Recv;
+	HTS221_pIO.WriteReg = BSP_I2C1_Send;
+	//HTS221_pIO.GetTick = BSP_GetTick;
 	uint8_t id, status;
 	float temperature, humidity;
 

@@ -222,7 +222,7 @@ int32_t BSP_I2C1_IsReady(uint16_t DevAddr, uint32_t Trials)
   * @retval BSP status
   */
 
-int32_t BSP_I2C1_WriteReg(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_t Length)
+int32_t BSP_I2C1_Send(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_t Length)
 {
   int32_t ret = BSP_ERROR_NONE;  
   
@@ -248,7 +248,7 @@ int32_t BSP_I2C1_WriteReg(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16
   * @param  Length Data Length
   * @retval BSP status
   */
-int32_t  BSP_I2C1_ReadReg(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_t Length) 
+int32_t  BSP_I2C1_Recv(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_t Length) 
 {
   int32_t ret = BSP_ERROR_NONE;
   
@@ -266,59 +266,7 @@ int32_t  BSP_I2C1_ReadReg(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16
   return ret;
 }
 
-/**
 
-  * @brief  Write a value in a register of the device through BUS.
-  * @param  DevAddr Device address on Bus.
-  * @param  Reg    The target register address to write
-
-  * @param  pData  Pointer to data buffer to write
-  * @param  Length Data Length
-  * @retval BSP statu
-  */
-int32_t BSP_I2C1_WriteReg16(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_t Length) 
-{
-  int32_t ret = BSP_ERROR_NONE;
-  
-  
-  if (HAL_I2C_Mem_Write(&hi2c1, DevAddr, Reg, I2C_MEMADD_SIZE_16BIT, pData, Length, BUS_I2C1_POLL_TIMEOUT) != HAL_OK)
-  {
-    if (HAL_I2C_GetError(&hi2c1) == HAL_I2C_ERROR_AF)    
-    {
-      ret = BSP_ERROR_BUS_ACKNOWLEDGE_FAILURE;
-    }
-    else
-    {
-      ret =  BSP_ERROR_PERIPH_FAILURE;
-    }
-  }
-  return ret;
-}
-
-/**
-  * @brief  Read registers through a bus (16 bits)
-  * @param  DevAddr: Device address on BUS
-  * @param  Reg: The target register address to read
-  * @param  Length Data Length
-  * @retval BSP status
-  */
-int32_t  BSP_I2C1_ReadReg16(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_t Length) 
-{
-  int32_t ret = BSP_ERROR_NONE;  
- 
-  if (HAL_I2C_Mem_Read(&hi2c1, DevAddr, Reg, I2C_MEMADD_SIZE_16BIT, pData, Length, BUS_I2C1_POLL_TIMEOUT) != HAL_OK)
-  {
-    if (HAL_I2C_GetError(&hi2c1) != HAL_I2C_ERROR_AF)
-    {
-      ret =  BSP_ERROR_BUS_ACKNOWLEDGE_FAILURE;
-    }
-    else
-    {
-      ret =  BSP_ERROR_PERIPH_FAILURE;
-    }
-  }
-  return ret;
-}
 
 /**
   * @brief  Send an amount width data through bus (Simplex)
@@ -327,7 +275,7 @@ int32_t  BSP_I2C1_ReadReg16(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint
   * @param  Length: Data length
   * @retval BSP status
   */
-int32_t BSP_I2C1_Send(uint16_t DevAddr, uint8_t *pData, uint16_t Length) {
+int32_t BSP_I2C1_Send_Simplex(uint16_t DevAddr, uint8_t *pData, uint16_t Length) {
   int32_t ret = BSP_ERROR_NONE;	  
   
   if (HAL_I2C_Master_Transmit(&hi2c1, DevAddr, pData, Length, BUS_I2C1_POLL_TIMEOUT) != HAL_OK)
@@ -352,7 +300,7 @@ int32_t BSP_I2C1_Send(uint16_t DevAddr, uint8_t *pData, uint16_t Length) {
   * @param  Length: Data length
   * @retval BSP status
   */
-int32_t BSP_I2C1_Recv(uint16_t DevAddr, uint8_t *pData, uint16_t Length) {	
+int32_t BSP_I2C1_Recv_Simplex(uint16_t DevAddr, uint8_t *pData, uint16_t Length) {	
   int32_t ret = BSP_ERROR_NONE;
   
   if (HAL_I2C_Master_Receive(&hi2c1, DevAddr, pData, Length, BUS_I2C1_POLL_TIMEOUT) != HAL_OK)
@@ -697,22 +645,6 @@ int32_t  BSP_SPI1_Send(uint8_t DevId, uint8_t Reg, uint8_t *pData, uint16_t Leng
   return ret;
 }
 
-/**
-  * @brief  Send and Receive data to/from SPI BUS (Full duplex)
-  * @param  pData: Pointer to data buffer to send/receive
-  * @param  Length: Length of data in byte
-  * @retval BSP status
-  */
-int32_t BSP_SPI1_SendRecv(uint8_t *pTxData, uint8_t *pRxData, uint16_t Length)
-{
-  int32_t ret = BSP_ERROR_NONE;
-
-  if(HAL_SPI_TransmitReceive(&hspi1, pTxData, pRxData, Length, BUS_SPI1_POLL_TIMEOUT) != HAL_OK)
-  {
-      ret = BSP_ERROR_UNKNOWN_FAILURE;
-  }
-  return ret;
-}
 
 #if (USE_HAL_SPI_REGISTER_CALLBACKS == 1)
 /**
