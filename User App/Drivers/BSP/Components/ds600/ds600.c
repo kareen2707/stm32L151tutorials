@@ -60,7 +60,7 @@ int32_t DS600_GET_Temperature(DS600_Object_t *pObj, float *temperature){
 	}
 	else{
 
-		ret = pObj->IO.Read(adc_reading);
+		ret = pObj->IO.Read(&adc_reading);
 		if(ret == DS600_OK){
 			volt_read = adc_reading * volt_res;
 			*temperature = (volt_read - OUTPUT_VOLTAGE_OFFSET)/OUTPUT_GAIN;
