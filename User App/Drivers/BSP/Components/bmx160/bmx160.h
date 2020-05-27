@@ -30,19 +30,20 @@
 * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 * POSSIBILITY OF SUCH DAMAGE.
 *
-* @file bmi160.h
-* @date 10/01/2020
-* @version  3.8.1
+* @file bmx160.h
+* @date Mar 17, 2020
+* @version  2.1
+* @modifier karen@b105.upm.es
 *
 */
 
 /*!
- * @defgroup bmi160
+ * @defgroup bmx160
  * @brief
  * @{*/
 
-#ifndef BMI160_H_
-#define BMI160_H_
+#ifndef BMX160_H_
+#define BMX160_H_
 
 /*************************** C++ guard macro *****************************/
 #ifdef __cplusplus
