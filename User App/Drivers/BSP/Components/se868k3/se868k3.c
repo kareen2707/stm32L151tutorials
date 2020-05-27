@@ -10,7 +10,7 @@
 //#include "cmsis_os.h" //karen
 
 static int32_t WriteWrap(void *Handle, uint8_t *pData, uint16_t Length, uint32_t Timeout);
-static int32_t ReadWrap(void *Handle, uint8_t *pData, uint16_t Length, char *Message); //KAREN: before without char* Message
+static int32_t ReadWrap(void *Handle, uint8_t *pData, uint16_t Length, char* message);
 
 
 /**
@@ -32,7 +32,6 @@ int32_t SE868K3_RegisterBusIO(SE868K3_Object_t *pObj, SE868K3_IO_t *pIO)
     pObj->IO.DeInit    = pIO->DeInit;
     pObj->IO.Write     = pIO->Write;
     pObj->IO.Read      = pIO->Read;
-    //pObj->IO.GetTick   = pIO->GetTick;
 
     pObj->Ctx.read  = ReadWrap;
     pObj->Ctx.write = WriteWrap;
@@ -62,7 +61,7 @@ int32_t SE868K3_Init(SE868K3_Object_t *pObj){
 			osDelay(FIRST_TIMER_GNSS);
 			se868k3_SET_MULTIPLE_constellation(&(pObj->Ctx));
 			osDelay(TIMER_GNSS);
-			//se868k3_SET_speed_threshold(&(pObj->Ctx));
+			se868k3_SET_navigation_mode(&(pObj->Ctx));
 			osDelay(TIMER_GNSS);
 			pObj->is_initialized = 1;
 			ret = SE868K3_OK;
@@ -71,27 +70,42 @@ int32_t SE868K3_Init(SE868K3_Object_t *pObj){
 	  return ret;
 }
 
-int32_t SE868K3_Test(SE868K3_Object_t *pObj)
-{
-	int32_t ret = SE868K3_OK;
-	//ret = se868k3_TEST(&(pObj->Ctx));
-	se868k3_SET_port_output_message_intervals(&(pObj->Ctx));
-	osDelay(TIMER_GNSS);
-	se868k3_SET_output_datarates(&(pObj->Ctx));
-	osDelay(TIMER_GNSS);
-	//se868k3_SET_speed_threshold(&(pObj->Ctx));
-	//osDelay(TIMER_GNSS);
-	return ret;
-}
-
 //int32_t SE868K3_Read_Packet(SE868K3_Object_t* pObj, uint8_t len)
 //{
 //	return se868k3_read(&(pObj->Ctx), pObj->pileUART, len);
 //}
-int32_t SE868K3_Read_GNRMC_Pck(SE868K3_Object_t* pObj){
-	return se868k3_read(&(pObj->Ctx), pObj->pileUART, 88, "GNRMC");
+
+int32_t SE868K3_Read_RMC(SE868K3_Object_t *pObj){
+	return se868k3_read(&(pObj->Ctx), pObj->pileUART, RMC_MAX_SIZE, "GNRMC");
 }
 
+int32_t SE868K3_Read_GGA(SE868K3_Object_t *pObj){
+	return se868k3_read(&(pObj->Ctx), pObj->pileUART, GGA_MAX_SIZE, "GNGGA");
+}
+
+ int32_t SE868K3_Read_GLL(SE868K3_Object_t *pObj){
+	 return se868k3_read(&(pObj->Ctx), pObj->pileUART, GLL_MAX_SIZE, "GNGLL");
+ }
+
+ int32_t SE868K3_Read_GSV(SE868K3_Object_t *pObj){
+	 return se868k3_read(&(pObj->Ctx), pObj->pileUART, GSV_MAX_SIZE, "GPGSV");
+ }
+
+ int32_t SE868K3_Read_RLM(SE868K3_Object_t *pObj){
+	 return se868k3_read(&(pObj->Ctx), pObj->pileUART, RLM_MAX_SIZE, "GNRLM");
+ }
+
+ int32_t SE868K3_Read_VTG(SE868K3_Object_t *pObj){
+	 return se868k3_read(&(pObj->Ctx), pObj->pileUART, VTG_MAX_SIZE, "GNVTG");
+ }
+
+ int32_t SE868K3_Read_ZDA(SE868K3_Object_t *pObj){
+	 return se868k3_read(&(pObj->Ctx), pObj->pileUART, ZDA_MAX_SIZE, "GNZDA");
+ }
+
+ int32_t SE868K3_Read_GSA(SE868K3_Object_t *pObj){
+	 return se868k3_read(&(pObj->Ctx), pObj->pileUART, GSA_MAX_SIZE, "GNGSA");
+ }
 
 static int32_t WriteWrap(void *Handle, uint8_t *pData, uint16_t Length, uint32_t Timeout){
 
@@ -99,10 +113,10 @@ static int32_t WriteWrap(void *Handle, uint8_t *pData, uint16_t Length, uint32_t
 	return pObj->IO.Write(pData, Length, Timeout);
 }
 
-static int32_t ReadWrap(void *Handle, uint8_t *pData, uint16_t Length, char* Message){
+static int32_t ReadWrap(void *Handle, uint8_t *pData, uint16_t Length, char* message){
 
 	SE868K3_Object_t *pObj = (SE868K3_Object_t *)Handle;
-	return pObj->IO.Read(pData, Length, Message);
+	return pObj->IO.Read(pData, Length, message);
 
 }
 
