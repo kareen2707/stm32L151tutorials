@@ -1,8 +1,8 @@
 /*
  * sph0644.h
- *
+ *	Header file of the MEMS microphones SEPH0644 integrated in Panda Board.
  *  Created on: 16 abr. 2020
- *      Author: karen
+ *      Author: karen@b105.upm.es
  */
 
 #ifndef BSP_COMPONENTS_MEMS_MPHONE_SPH0644_H_
@@ -16,7 +16,7 @@ extern "C" {
 #include <math.h>
 #include <stdint.h>
 
-/** @defgroup BMX160_Exported_Types BMX160 Exported Types
+/** @defgroup SPH0644_Exported_Types BMX160 Exported Types
  * @{
  */
 
@@ -32,7 +32,6 @@ typedef struct
 {
   SPH0644_Init_Func          Init;
   SPH0644_DeInit_Func        DeInit;
-  uint32_t                   BusType; /*0 means I2C, 1 means SPI-4-Wires */
   SPH0644_Read_Func       	 Read;
 } SPH06440_IO_t;
 
