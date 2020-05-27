@@ -1,6 +1,13 @@
+/*
+ * bmx160.c
+ *
+ *  Created on: 17 march. 2020
+ *      Author: karen@b105.upm.es
+ */
+
 
 /*!
- * @defgroup bmi160
+ * @defgroup bmx160
  * @brief
  * @{*/
 
