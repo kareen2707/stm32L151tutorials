@@ -2062,7 +2062,8 @@ int32_t extract_aux_read(bmx160_ctx_t* ctx, uint16_t map_len, uint8_t reg_addr, 
     for (; count < len;)
     {
         /* set address to read */
-        rslt = bmx160_write_reg(ctx, BMX160_AUX_IF_2_ADDR, &reg_addr, 1, ctx->mode);
+        //rslt = bmx160_write_reg(ctx, BMX160_AUX_IF_2_ADDR, &reg_addr, 1, ctx->mode); BMI
+	  rslt = bmx160_write_reg(ctx, BMX160_AUX_IF_1_ADDR, &reg_addr, 1, ctx->mode);
         //dev->delay_ms(BMI160_AUX_COM_DELAY);
         bmx160_delay_ms(ctx, BMX160_AUX_COM_DELAY);
         if (rslt == BMX160_OK)
