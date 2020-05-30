@@ -30,6 +30,9 @@
 //#include "app_x-cube-mems1.h"
 #include "hts221.h"
 #include "se868k3.h"
+#include "ds600.h"
+#include "sph0644.h"
+#include "bmx160.h"
 #include "custom_bus.h"
 #include <stdio.h>
 #include <string.h>
@@ -57,6 +60,13 @@ char SDPath[4];   /* SD logical drive path */
 FATFS SDFatFS __attribute__ ((aligned(4)));    /* File system object for SD logical drive */
 FIL SDFile __attribute__ ((aligned(4)));
 static uint8_t new_cmd = 0;
+
+SE868K3_Object_t* SE868K3_pObj;
+SE868K3_IO_t* SE868K3_pIO;
+uint8_t* gnss_buffer;
+
+HTS221_Object_t* HTS221_pObj;
+HTS221_IO_t* HTS221_pIO;
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
@@ -144,21 +154,53 @@ void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackTy
   */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
-	SE868K3_Object_t* SE868K3_pObj;
-	uint8_t* gnss_buffer;
-	uint16_t * flags;
+
 
 	gnss_buffer = (uint8_t*)pvPortMalloc(BUFFER_PCKT_SIZE);
-	SE868K3_pObj = (SE868K3_Object_t*) pvPortMalloc(sizeof(SE868K3_Object_t));
-	flags = (uint16_t*) pvPortMalloc(sizeof(uint16_t));
+	SE868K3_pObj = (SE868K3_Object_t*)pvPortMalloc(sizeof(SE868K3_Object_t));
+	SE868K3_pIO	= (SE868K3_IO_t *) pvPortMalloc(sizeof(SE868K3_IO_t));
+	HTS221_pObj = (HTS221_Object_t*) pvPortMalloc(sizeof(HTS221_Object_t));
+	HTS221_pIO	= (HTS221_IO_t *) pvPortMalloc(sizeof(HTS221_IO_t));
 
-	*flags = 0;
 	SE868K3_pObj->is_initialized = 0;
 	SE868K3_pObj->pileUART = gnss_buffer;
+	SE868K3_pIO->Init = BSP_UART1_Init;
+	SE868K3_pIO->DeInit = BSP_UART1_DeInit;
+	SE868K3_pIO->Read = BSP_UART1_Recv;
+	SE868K3_pIO->Write = BSP_UART1_Send;
 
+	if(SE868K3_RegisterBusIO(SE868K3_pObj, SE868K3_pIO) != SE868K3_ERROR){
+		osThreadDef(gnssTask, SE868K3, osPriorityNormal, 0, 300);
+		gnssTaskHandle = osThreadCreate(osThread(gnssTask), (void*) SE868K3_pObj);
+	}
+	else{
+		vPortFree(SE868K3_pObj);
+		vPortFree(SE868K3_pIO);
+	}
+
+	HTS221_pObj->is_initialized = 0;
+	HTS221_pIO->Address = (uint8_t)(HTS221_I2C_ADDRESS << 1);
+	HTS221_pIO->BusType = HTS221_I2C_BUS;
+	HTS221_pIO->Init = BSP_I2C1_Init;
+	HTS221_pIO->DeInit = BSP_I2C1_DeInit;
+	HTS221_pIO->ReadReg = BSP_I2C1_Recv;
+	HTS221_pIO->WriteReg = BSP_I2C1_Send;
+
+	if(HTS221_RegisterBusIO(HTS221_pObj, HTS221_pIO) != HTS221_ERROR){
+		osThreadDef(hts221Task, HTS221, osPriorityNormal, 0, 128);
+		hts221TaskHandle = osThreadCreate(osThread(hts221Task), (void*) HTS221_pObj);
+	}
+	else{
+		vPortFree(HTS221_pObj);
+		vPortFree(HTS221_pIO);
+	}
 
 	MX_FATFS_Init();
-
+	if(f_mount(&SDFatFS, (TCHAR const*) SDPath, 1) == FR_OK){ // 1. Register a work area
+			if(f_open(&SDFile, "tfm1.txt", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK){ // 2. Creating a new file to write it later
+				fileCreated = 1;
+			}
+		}
   /* USER CODE END Init */
 
   /* Create the mutex(es) */
@@ -198,8 +240,8 @@ void MX_FREERTOS_Init(void) {
 //  hts221TaskHandle = osThreadCreate(osThread(hts221Task), NULL);
 
   /* definition and creation of gnssTask */
-  osThreadDef(gnssTask, SE868K3, osPriorityNormal, 0, 300);
-  gnssTaskHandle = osThreadCreate(osThread(gnssTask), (void*) SE868K3_pObj);
+//  osThreadDef(gnssTask, SE868K3, osPriorityNormal, 0, 300);
+//  gnssTaskHandle = osThreadCreate(osThread(gnssTask), (void*) SE868K3_pObj);
 
   /* definition and creation of dogTempTask */
 //  osThreadDef(dogtempTask, dogtemp, osPriorityBelowNormal, 0, 96);
@@ -256,12 +298,6 @@ void microSD(void const * argument)
 	osEvent rx;
 	uint8_t byteswritten;
 
-	if(f_mount(&SDFatFS, (TCHAR const*) SDPath, 1) == FR_OK){ // 1. Register a work area
-		if(f_open(&SDFile, "real.txt", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK){ // 2. Creating a new file to write it later
-			fileCreated = 1;
-		}
-	}
-
   /* Infinite loop */
   for(;;)
   {
@@ -292,31 +328,31 @@ void microSD(void const * argument)
 void HTS221(void const * argument)
 {
   /* USER CODE BEGIN HTS221 */
-	HTS221_Object_t HTS221_pObj;
-	HTS221_IO_t HTS221_pIO;
-	HTS221_pIO.Address = (uint8_t) (HTS221_I2C_ADDRESS<<1);
-	HTS221_pIO.BusType = HTS221_I2C_BUS;
-	HTS221_pIO.Init = BSP_I2C1_Init;
-	HTS221_pIO.DeInit = BSP_I2C1_DeInit;
-	HTS221_pIO.ReadReg = BSP_I2C1_Recv;
-	HTS221_pIO.WriteReg = BSP_I2C1_Send;
+
+//	HTS221_pIO.Address = (uint8_t) (HTS221_I2C_ADDRESS<<1);
+//	HTS221_pIO.BusType = HTS221_I2C_BUS;
+//	HTS221_pIO.Init = BSP_I2C1_Init;
+//	HTS221_pIO.DeInit = BSP_I2C1_DeInit;
+//	HTS221_pIO.ReadReg = BSP_I2C1_Recv;
+//	HTS221_pIO.WriteReg = BSP_I2C1_Send;
 	//HTS221_pIO.GetTick = BSP_GetTick;
 	uint8_t id, status;
 	float temperature, humidity;
 
-	HTS221_RegisterBusIO(&HTS221_pObj, &HTS221_pIO);
-	HTS221_Init(&HTS221_pObj);
-	HTS221_ReadID(&HTS221_pObj, &id);
+	//HTS221_RegisterBusIO(&HTS221_pObj, &HTS221_pIO);
+	HTS221_Object_t *HTS221_pObj = (HTS221_Object_t*) argument;
+	HTS221_Init(HTS221_pObj);
+	HTS221_ReadID(HTS221_pObj, &id);
 	if(id == HTS221_ID){
-		HTS221_Get_Init_Status(&HTS221_pObj, &status);
-		HTS221_HUM_Enable(&HTS221_pObj);
-		HTS221_TEMP_Enable(&HTS221_pObj);
+		HTS221_Get_Init_Status(HTS221_pObj, &status);
+		HTS221_HUM_Enable(HTS221_pObj);
+		HTS221_TEMP_Enable(HTS221_pObj);
 	}
   /* Infinite loop */
   for(;;)
   {
-	  HTS221_HUM_GetHumidity(&HTS221_pObj, &humidity);
-	  HTS221_TEMP_GetTemperature(&HTS221_pObj, &temperature);
+	  HTS221_HUM_GetHumidity(HTS221_pObj, &humidity);
+	  HTS221_TEMP_GetTemperature(HTS221_pObj, &temperature);
 	  osDelay(500);
   }
   /* USER CODE END HTS221 */
@@ -333,20 +369,21 @@ void SE868K3(void const * argument)
 {
   /* USER CODE BEGIN SE868K3 */
 
-	SE868K3_IO_t SE868K3_pIO;
+	//SE868K3_IO_t SE868K3_pIO;
 	SE868K3_Object_t *SE868K3_pObj = (SE868K3_Object_t*) argument;
 
-	SE868K3_pIO.Init = BSP_UART1_Init;
-	SE868K3_pIO.DeInit = BSP_UART1_DeInit;
-	SE868K3_pIO.Read = BSP_UART1_Recv;
-	SE868K3_pIO.Write = BSP_UART1_Send;
+	//SE868K3_pIO.Init = BSP_UART1_Init;
+	//SE868K3_pIO.DeInit = BSP_UART1_DeInit;
+	//SE868K3_pIO.Read = BSP_UART1_Recv;
+	//SE868K3_pIO.Write = BSP_UART1_Send;
+	//SE868K3_pIO.GetTick = BSP_GetTick;
 
-	if(SE868K3_RegisterBusIO(SE868K3_pObj, &SE868K3_pIO) != SE868K3_ERROR){
-		if(SE868K3_Init(SE868K3_pObj) != SE868K3_OK )
-		{
-			HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, SET);
-		}
-	}
+//	if(SE868K3_RegisterBusIO(SE868K3_pObj, &SE868K3_pIO) != SE868K3_ERROR){
+//		if(SE868K3_Init(SE868K3_pObj) != SE868K3_OK )
+//		{
+//			HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, SET);
+//		}
+//	}
 
 	//SE868K3_Test(SE868K3_pObj); // re-send the output message rate
 
@@ -355,12 +392,14 @@ void SE868K3(void const * argument)
   for(;;)
   {
 	  //if(SE868K3_Read_Packet(SE868K3_pObj, BUFFER_PCKT_SIZE) == 1){
-	  if(SE868K3_Read_GNRMC_Pck(SE868K3_pObj) == 1){
-		  if((osMutexWait(gnssMutexHandle, 6)) == osOK){
-			  osMessagePut(myQueue01Handle, (uint32_t)SE868K3_pObj->pileUART, 0);
-			  new_cmd = 1;
-			  osMutexRelease(gnssMutexHandle);
-		  }
+	  if(SE868K3_Read_RMC(SE868K3_pObj) == 1){
+		  //if(SE868K3_pObj->pileUART[18] == 'A'){
+			  if((osMutexWait(gnssMutexHandle, 6)) == osOK){
+				  osMessagePut(myQueue01Handle, (uint32_t)SE868K3_pObj->pileUART, 0);
+				  new_cmd = 1;
+				  osMutexRelease(gnssMutexHandle);
+			  }
+		  //}
 	  }
 	  osDelay(100);
   }
