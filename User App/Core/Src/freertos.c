@@ -87,10 +87,10 @@ osThreadId sph064TaskHandle;
 osThreadId bmx160TaskHandle;
 osMutexId gnssMutexHandle;
 osMessageQId myQueue01Handle;
-
+osTimerId bmx160TimerHandle;
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-;
+static void BMX160_delay_ms(uint32_t period);
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -100,11 +100,15 @@ void SE868K3(void const * argument);
 void DS600(void const * argument);
 void mphones(void const * argument);
 void imu(void const * argument);
+void bmx160_Timer_Callback(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* GetIdleTaskMemory prototype (linked to static allocation support) */
 void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize );
+
+/* GetTimerTaskMemory prototype (linked to static allocation support) */
+void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer, StackType_t **ppxTimerTaskStackBuffer, uint32_t *pulTimerTaskStackSize );
 
 /* Hook prototypes */
 void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName);
@@ -155,6 +159,19 @@ void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackTy
   /* place for user code */
 }                   
 /* USER CODE END GET_IDLE_TASK_MEMORY */
+
+/* USER CODE BEGIN GET_TIMER_TASK_MEMORY */
+static StaticTask_t xTimerTaskTCBBuffer;
+static StackType_t xTimerStack[configTIMER_TASK_STACK_DEPTH];
+
+void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer, StackType_t **ppxTimerTaskStackBuffer, uint32_t *pulTimerTaskStackSize )
+{
+  *ppxTimerTaskTCBBuffer = &xTimerTaskTCBBuffer;
+  *ppxTimerTaskStackBuffer = &xTimerStack[0];
+  *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
+  /* place for user code */
+}
+/* USER CODE END GET_TIMER_TASK_MEMORY */
 
 /**
   * @brief  FreeRTOS initialization
@@ -219,6 +236,19 @@ void MX_FREERTOS_Init(void) {
 		vPortFree(DS600_pObj);
 		vPortFree(DS600_pIO);
 	}
+
+	BMX160_pObj = (BMX160_Object_t*) pvPortMalloc(sizeof(BMX160_Object_t));
+	BMX160_pIO = (BMX160_IO_t*) pvPortMalloc(sizeof(BMX160_IO_t));
+	osTimerDef(bmx160Timer, bmx160_Timer_Callback);
+	bmx160TimerHandle = osTimerCreate(osTimer(bmx160Timer), osTimerOnce, NULL);
+
+	BMX160_pObj->is_initialized = 0;
+	BMX160_pIO->BusType = BMX160_SPI_INTF;
+	BMX160_pIO->Init = BSP_SPI1_Init;
+	BMX160_pIO->DeInit = BSP_SPI1_DeInit;
+	BMX160_pIO->ReadReg = BSP_SPI1_Recv;
+	BMX160_pIO->WriteReg = BSP_SPI1_Send;
+	BMX160_pIO->Delayms = BMX160_delay_ms;
 
 	MX_FATFS_Init();
 	if(f_mount(&SDFatFS, (TCHAR const*) SDPath, 1) == FR_OK){ // 1. Register a work area
@@ -489,6 +519,17 @@ void imu(void const * argument)
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 
+void bmx160_Timer_Callback(void const * argument){
+	HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+}
+
+static void BMX160_delay_ms(uint32_t period){
+	if(osTimerStart(bmx160TimerHandle, period) != osOK){
+		while(1){
+			//TO DEBUG
+		}
+	}
+}
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
