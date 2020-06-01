@@ -250,6 +250,32 @@ void MX_FREERTOS_Init(void) {
 	BMX160_pIO->WriteReg = BSP_SPI1_Send;
 	BMX160_pIO->Delayms = BMX160_delay_ms;
 
+	if(BMX160_RegisterBusIO(BMX160_pObj, BMX160_pIO) == BMX160_OK){
+		osThreadDef(bmx160Task, imu, osPriorityIdle, 0, 128);
+		bmx160TaskHandle = osThreadCreate(osThread(bmx160Task), NULL);
+	}
+	else{
+		vPortFree(BMX160_pObj);
+		vPortFree(BMX160_pIO);
+		osTimerDelete(bmx160TimerHandle);
+	}
+
+	SPH06440_pObj = (SPH06440_Object_t*) pvPortMalloc(sizeof(SPH06440_Object_t));
+	SPH06440_pIO = (SPH06440_IO_t*) pvPortMalloc(sizeof(SPH06440_IO_t));
+
+	SPH06440_pObj->is_initialized = 0;
+	SPH06440_pIO->Init = BSP_SPI3_Init;
+	SPH06440_pIO->Read = BSP_SPI3_Recv;
+
+	if(SPH06440_RegisterBusIO(SPH06440_pObj, SPH06440_pIO) == SPH0644_OK){
+		osThreadDef(sph064Task, mphones, osPriorityIdle, 0, 128);
+		sph064TaskHandle = osThreadCreate(osThread(sph064Task), NULL);
+	}
+	else{
+		vPortFree(SPH06440_pObj);
+		vPortFree(SPH06440_pIO);
+	}
+
 	MX_FATFS_Init();
 	if(f_mount(&SDFatFS, (TCHAR const*) SDPath, 1) == FR_OK){ // 1. Register a work area
 			if(f_open(&SDFile, "tfm1.txt", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK){ // 2. Creating a new file to write it later
