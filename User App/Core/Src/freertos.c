@@ -68,6 +68,15 @@ uint8_t* gnss_buffer;
 HTS221_Object_t* HTS221_pObj;
 HTS221_IO_t* HTS221_pIO;
 
+DS600_Object_t* DS600_pObj;
+DS600_IO_t* DS600_pIO;
+
+SPH06440_Object_t* SPH06440_pObj;
+SPH06440_IO_t* SPH06440_pIO;
+
+BMX160_Object_t* BMX160_pObj;
+BMX160_IO_t* BMX160_pIO;
+
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId microSDTaskHandle;
@@ -88,7 +97,7 @@ void StartDefaultTask(void const * argument);
 void microSD(void const * argument);
 void HTS221(void const * argument);
 void SE868K3(void const * argument);
-void dogtemp(void const * argument);
+void DS600(void const * argument);
 void mphones(void const * argument);
 void imu(void const * argument);
 
@@ -195,12 +204,29 @@ void MX_FREERTOS_Init(void) {
 		vPortFree(HTS221_pIO);
 	}
 
+	DS600_pObj = (DS600_Object_t*) pvPortMalloc(sizeof(DS600_Object_t));
+	DS600_pIO = (DS600_IO_t*) pvPortMalloc(sizeof(DS600_IO_t));
+	DS600_pObj->is_initialized = 0;
+	DS600_pIO->Init = BSP_ADC1_Init;
+	DS600_pIO->DeInit = BSP_ADC1_DeInit;
+	DS600_pIO->Read = BSP_ADC1_Read;
+
+	if(DS600_RegisterBusIO(DS600_pObj, DS600_pIO) != DS600_ERROR){
+		osThreadDef(dogtempTask, DS600, osPriorityBelowNormal, 0, 96);
+		ds600TaskHandle = osThreadCreate(osThread(dogtempTask), (void*) DS600_pObj);
+	}
+	else{
+		vPortFree(DS600_pObj);
+		vPortFree(DS600_pIO);
+	}
+
 	MX_FATFS_Init();
 	if(f_mount(&SDFatFS, (TCHAR const*) SDPath, 1) == FR_OK){ // 1. Register a work area
 			if(f_open(&SDFile, "tfm1.txt", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK){ // 2. Creating a new file to write it later
 				fileCreated = 1;
 			}
 		}
+
   /* USER CODE END Init */
 
   /* Create the mutex(es) */
@@ -244,7 +270,7 @@ void MX_FREERTOS_Init(void) {
 //  gnssTaskHandle = osThreadCreate(osThread(gnssTask), (void*) SE868K3_pObj);
 
   /* definition and creation of dogTempTask */
-//  osThreadDef(dogtempTask, dogtemp, osPriorityBelowNormal, 0, 96);
+//  osThreadDef(dogtempTask, dogTemp, osPriorityBelowNormal, 0, 96);
 //  ds600TaskHandle = osThreadCreate(osThread(dogtempTask), NULL);
 //
 //  /* definition and creation of sph064Task */
@@ -293,8 +319,6 @@ void StartDefaultTask(void const * argument)
 void microSD(void const * argument)
 {
   /* USER CODE BEGIN microSD */
-	//uint8_t *cmd;
-	//pilePointers_t *serial = (pilePointers_t *) argument;
 	osEvent rx;
 	uint8_t byteswritten;
 
@@ -414,7 +438,7 @@ void SE868K3(void const * argument)
 * @retval None
 */
 /* USER CODE END Header_dogTemp */
-void dogTemp(void const * argument)
+void DS600(void const * argument)
 {
   /* USER CODE BEGIN dogtemp */
 
