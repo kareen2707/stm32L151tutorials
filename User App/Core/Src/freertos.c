@@ -86,7 +86,11 @@ osThreadId ds600TaskHandle;
 osThreadId sph064TaskHandle;
 osThreadId bmx160TaskHandle;
 osMutexId gnssMutexHandle;
-osMessageQId myQueue01Handle;
+osMessageQId gnssQueueHandle;
+osMessageQId hts221QueueHandle;
+osMessageQId ds600QueueHandle;
+osMessageQId mphonesQueueHandle;
+osMessageQId bmx160QueueHandle;
 osTimerId bmx160TimerHandle;
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -198,6 +202,8 @@ void MX_FREERTOS_Init(void) {
 	if(SE868K3_RegisterBusIO(SE868K3_pObj, SE868K3_pIO) != SE868K3_ERROR){
 		osThreadDef(gnssTask, SE868K3, osPriorityNormal, 0, 300);
 		gnssTaskHandle = osThreadCreate(osThread(gnssTask), (void*) SE868K3_pObj);
+		osMessageQDef(myQueue01, 4, uint32_t);
+		gnssQueueHandle = osMessageCreate(osMessageQ(myQueue01), NULL);
 	}
 	else{
 		vPortFree(SE868K3_pObj);
@@ -215,6 +221,8 @@ void MX_FREERTOS_Init(void) {
 	if(HTS221_RegisterBusIO(HTS221_pObj, HTS221_pIO) != HTS221_ERROR){
 		osThreadDef(hts221Task, HTS221, osPriorityNormal, 0, 128);
 		hts221TaskHandle = osThreadCreate(osThread(hts221Task), (void*) HTS221_pObj);
+		osMessageQDef(myQueue02, 4, uint32_t);
+		hts221QueueHandle = osMessageCreate(osMessageQ(myQueue02), NULL);
 	}
 	else{
 		vPortFree(HTS221_pObj);
@@ -231,6 +239,8 @@ void MX_FREERTOS_Init(void) {
 	if(DS600_RegisterBusIO(DS600_pObj, DS600_pIO) != DS600_ERROR){
 		osThreadDef(dogtempTask, DS600, osPriorityBelowNormal, 0, 96);
 		ds600TaskHandle = osThreadCreate(osThread(dogtempTask), (void*) DS600_pObj);
+		osMessageQDef(myQueue03, 4, uint32_t);
+		ds600QueueHandle = osMessageCreate(osMessageQ(myQueue03), NULL);
 	}
 	else{
 		vPortFree(DS600_pObj);
@@ -253,6 +263,8 @@ void MX_FREERTOS_Init(void) {
 	if(BMX160_RegisterBusIO(BMX160_pObj, BMX160_pIO) == BMX160_OK){
 		osThreadDef(bmx160Task, imu, osPriorityIdle, 0, 128);
 		bmx160TaskHandle = osThreadCreate(osThread(bmx160Task), NULL);
+		osMessageQDef(myQueue04, 4, uint32_t);
+		bmx160QueueHandle = osMessageCreate(osMessageQ(myQueue04), NULL);
 	}
 	else{
 		vPortFree(BMX160_pObj);
@@ -270,6 +282,8 @@ void MX_FREERTOS_Init(void) {
 	if(SPH06440_RegisterBusIO(SPH06440_pObj, SPH06440_pIO) == SPH0644_OK){
 		osThreadDef(sph064Task, mphones, osPriorityIdle, 0, 128);
 		sph064TaskHandle = osThreadCreate(osThread(sph064Task), NULL);
+		osMessageQDef(myQueue05, 4, uint32_t);
+		mphonesQueueHandle = osMessageCreate(osMessageQ(myQueue05), NULL);
 	}
 	else{
 		vPortFree(SPH06440_pObj);
@@ -289,7 +303,6 @@ void MX_FREERTOS_Init(void) {
   /* definition and creation of gnssMutex */
 	osMutexDef(gnssMutex);
 	gnssMutexHandle = osMutexCreate(osMutex(gnssMutex));
-	//SE868K3_pObj->pileLock = gnssMutexHandle;
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
@@ -304,8 +317,8 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
-	osMessageQDef(myQueue01, 4, uint32_t);
-	myQueue01Handle = osMessageCreate(osMessageQ(myQueue01), NULL);
+//	osMessageQDef(myQueue01, 4, uint32_t);
+//	gnssQueueHandle = osMessageCreate(osMessageQ(myQueue01), NULL);
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -384,7 +397,7 @@ void microSD(void const * argument)
 	  byteswritten = 0;
 	  	  if(fileCreated && new_cmd){
 	  		  if((osMutexWait(gnssMutexHandle, 6)) == osOK){
-	  			  rx = osMessageGet(myQueue01Handle, 0);
+	  			  rx = osMessageGet(gnssQueueHandle, 0);
 	  			  new_cmd = 0; // Cleaning the flag
 	  			  osMutexRelease(gnssMutexHandle);
 	  			  f_write(&SDFile, (const void *) rx.value.p, BUFFER_PCKT_SIZE, (void *)&byteswritten);
@@ -475,7 +488,7 @@ void SE868K3(void const * argument)
 	  if(SE868K3_Read_RMC(SE868K3_pObj) == 1){
 		  //if(SE868K3_pObj->pileUART[18] == 'A'){
 			  if((osMutexWait(gnssMutexHandle, 6)) == osOK){
-				  osMessagePut(myQueue01Handle, (uint32_t)SE868K3_pObj->pileUART, 0);
+				  osMessagePut(gnssQueueHandle, (uint32_t)SE868K3_pObj->pileUART, 0);
 				  new_cmd = 1;
 				  osMutexRelease(gnssMutexHandle);
 			  }
