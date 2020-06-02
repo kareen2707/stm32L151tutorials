@@ -141,6 +141,10 @@ typedef union{
  * @}
  */
 
+typedef struct{
+	float humidity;
+	float temperature;
+}hts221_data_t;
 /** @defgroup HTS221_Exported_Constants HTS221 Exported Constants
  * @{
  */
