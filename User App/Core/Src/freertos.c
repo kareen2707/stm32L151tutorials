@@ -71,6 +71,7 @@ hts221_data_t* HTS221_Data_Read;
 
 DS600_Object_t* DS600_pObj;
 DS600_IO_t* DS600_pIO;
+float* corporal_temp;
 
 SPH06440_Object_t* SPH06440_pObj;
 SPH06440_IO_t* SPH06440_pIO;
@@ -222,7 +223,7 @@ void MX_FREERTOS_Init(void) {
 	if(HTS221_RegisterBusIO(HTS221_pObj, HTS221_pIO) != HTS221_ERROR){
 		osThreadDef(hts221Task, HTS221, osPriorityNormal, 0, 128);
 		hts221TaskHandle = osThreadCreate(osThread(hts221Task), (void*) HTS221_pObj);
-		osMessageQDef(myQueue02, 4, sizeof(hts221_data_t*));
+		osMessageQDef(myQueue02, 4, sizeof(hts221_data_t));
 		hts221_QueueHandle = osMessageCreate(osMessageQ(myQueue02), NULL);
 	}
 	else{
@@ -475,7 +476,7 @@ void SE868K3(void const * argument)
 
 	//SE868K3_IO_t SE868K3_pIO;
 	SE868K3_Object_t *SE868K3_pObj = (SE868K3_Object_t*) argument;
-
+	SE868K3_Init(SE868K3_pObj);
 	//SE868K3_pIO.Init = BSP_UART1_Init;
 	//SE868K3_pIO.DeInit = BSP_UART1_DeInit;
 	//SE868K3_pIO.Read = BSP_UART1_Recv;
@@ -521,10 +522,14 @@ void SE868K3(void const * argument)
 void DS600(void const * argument)
 {
   /* USER CODE BEGIN dogtemp */
+	DS600_Object_t *DS600_pObj = (DS600_Object_t*) argument;
 
   /* Infinite loop */
   for(;;)
   {
+	  corporal_temp = (float*) pvPortMalloc(sizeof(float));
+	  DS600_GET_Temperature(DS600_pObj, corporal_temp);
+	  osMessagePut(ds600QueueHandle, (uint32_t)corporal_temp, 0);
     osDelay(20);
   }
   /* USER CODE END dogtemp */
