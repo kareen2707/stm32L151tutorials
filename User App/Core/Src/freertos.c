@@ -75,6 +75,7 @@ float* corporal_temp;
 
 SPH06440_Object_t* SPH06440_pObj;
 SPH06440_IO_t* SPH06440_pIO;
+uint8_t* sound;
 
 BMX160_Object_t* BMX160_pObj;
 BMX160_IO_t* BMX160_pIO;
@@ -188,7 +189,7 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
 
 
-	gnss_buffer = (uint8_t*)pvPortMalloc(BUFFER_PCKT_SIZE);
+	gnss_buffer = (uint8_t*)pvPortMalloc(GLL_MAX_SIZE);
 	SE868K3_pObj = (SE868K3_Object_t*)pvPortMalloc(sizeof(SE868K3_Object_t));
 	SE868K3_pIO	= (SE868K3_IO_t *) pvPortMalloc(sizeof(SE868K3_IO_t));
 	HTS221_pObj = (HTS221_Object_t*) pvPortMalloc(sizeof(HTS221_Object_t));
@@ -264,7 +265,7 @@ void MX_FREERTOS_Init(void) {
 
 	if(BMX160_RegisterBusIO(BMX160_pObj, BMX160_pIO) == BMX160_OK){
 		osThreadDef(bmx160Task, imu, osPriorityIdle, 0, 128);
-		bmx160TaskHandle = osThreadCreate(osThread(bmx160Task), NULL);
+		bmx160TaskHandle = osThreadCreate(osThread(bmx160Task), (void*) BMX160_pObj);
 		osMessageQDef(myQueue05, 4, uint32_t);
 		bmx160QueueHandle = osMessageCreate(osMessageQ(myQueue05), NULL);
 	}
@@ -283,7 +284,7 @@ void MX_FREERTOS_Init(void) {
 
 	if(SPH06440_RegisterBusIO(SPH06440_pObj, SPH06440_pIO) == SPH0644_OK){
 		osThreadDef(sph064Task, mphones, osPriorityIdle, 0, 128);
-		sph064TaskHandle = osThreadCreate(osThread(sph064Task), NULL);
+		sph064TaskHandle = osThreadCreate(osThread(sph064Task), (void*) SPH06440_pObj);
 		osMessageQDef(myQueue06, 4, uint32_t);
 		mphonesQueueHandle = osMessageCreate(osMessageQ(myQueue06), NULL);
 	}
@@ -545,10 +546,15 @@ void DS600(void const * argument)
 void mphones(void const * argument)
 {
   /* USER CODE BEGIN mphones */
+	SPH06440_Object_t *SPH06440_pObj = (SPH06440_Object_t*) argument;
+
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+	  sound = (uint8_t*)pvPortMalloc(20);
+	  SPH06440_GET_samples(SPH06440_pObj, sound, 20);
+	  osMessagePut(mphonesQueueHandle, (uint32_t) sound, 5);
+    osDelay(30);
   }
   /* USER CODE END mphones */
 }
