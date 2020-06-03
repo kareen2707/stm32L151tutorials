@@ -79,6 +79,9 @@ uint8_t* sound;
 
 BMX160_Object_t* BMX160_pObj;
 BMX160_IO_t* BMX160_pIO;
+bmx160_sensor_data* accel;
+bmx160_sensor_data* gyro;
+bmx160_aux_data* mag;
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
@@ -569,9 +572,31 @@ void mphones(void const * argument)
 void imu(void const * argument)
 {
   /* USER CODE BEGIN imu */
+	BMX160_Object_t *BMX160_pObj = (BMX160_Object_t*) argument;
+
+	/* Select the Output data rate, range and power mode of accelerometer sensor */
+	BMX160_pObj->accel_cfg.odr = BMX160_ACCEL_ODR_1600HZ;
+	BMX160_pObj->accel_cfg.range = BMX160_ACCEL_RANGE_2G;
+	BMX160_pObj->accel_cfg.bw = BMX160_ACCEL_BW_NORMAL_AVG4;
+	BMX160_pObj->accel_cfg.power = BMX160_ACCEL_NORMAL_MODE;
+
+	/* Select the Output data rate, range and power mode of Gyroscope sensor */
+	BMX160_pObj->gyro_cfg.odr = BMX160_GYRO_ODR_3200HZ;
+	BMX160_pObj->gyro_cfg.range = BMX160_GYRO_RANGE_2000_DPS;
+	BMX160_pObj->gyro_cfg.bw = BMX160_GYRO_BW_NORMAL_MODE;
+	BMX160_pObj->gyro_cfg.power = BMX160_GYRO_NORMAL_MODE;
+
+	BMX160_set_sens_conf(BMX160_pObj);
   /* Infinite loop */
   for(;;)
   {
+	 accel = (bmx160_sensor_data*) pvPortMalloc(sizeof(bmx160_sensor_data));
+	 gyro = (bmx160_sensor_data*) pvPortMalloc(sizeof(bmx160_sensor_data));
+	 //mag = (bmx160_aux_data*) pvPortMalloc(sizeof(bmx160_aux_data));
+
+	 BMX160_get_sensor_data(BMX160_pObj, BMX160_ACCEL_SEL | BMX160_GYRO_SEL, accel, gyro);
+	 osMessagePut(bmx160QueueHandle, (uint32_t) accel, 1);
+
     osDelay(1);
   }
   /* USER CODE END imu */
