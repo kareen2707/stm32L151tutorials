@@ -1,4 +1,4 @@
-/**
+ /**
   ******************************************************************************
   * @file           : custom_bus.c
   * @brief          : source file for the BSP BUS IO driver
@@ -56,6 +56,7 @@ DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi3_rx;
 DMA_HandleTypeDef hdma_usart1_rx;
+DMA_HandleTypeDef hdma_adc1;
 
 /**
   * @}
@@ -84,6 +85,7 @@ static uint32_t ADC1InitCounter = 0;
 static uint32_t SPI3InitCounter = 0;
 
 static uint8_t SPI3_rx_done = 0;
+static uint8_t ADC1_read_done = 0;
 /**
   * @}
   */
@@ -106,7 +108,7 @@ static void SPI_MspDeInit(SPI_HandleTypeDef* hSPI);
 #if (USE_CUBEMX_BSP_V2 == 1)
 static uint32_t SPI_GetPrescaler( uint32_t clk_src_hz, uint32_t baudrate_mbps );
 #endif
-static void ADC_MspInit(ADC_HandleTypeDef* adcHandle);
+static int32_t ADC_MspInit(ADC_HandleTypeDef* adcHandle);
 static void ADC_MspDeInit(ADC_HandleTypeDef* adcHandle);
 
 /**
@@ -248,7 +250,7 @@ int32_t BSP_I2C1_Send(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_t L
   * @param  Length Data Length
   * @retval BSP status
   */
-int32_t  BSP_I2C1_Recv(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_t Length) 
+int32_t  BSP_I2C1_Recv(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_t Length)
 {
   int32_t ret = BSP_ERROR_NONE;
   
@@ -300,7 +302,7 @@ int32_t BSP_I2C1_Send_Simplex(uint16_t DevAddr, uint8_t *pData, uint16_t Length)
   * @param  Length: Data length
   * @retval BSP status
   */
-int32_t BSP_I2C1_Recv_Simplex(uint16_t DevAddr, uint8_t *pData, uint16_t Length) {	
+int32_t BSP_I2C1_Recv_Simplex(uint16_t DevAddr, uint8_t *pData, uint16_t Length) {
   int32_t ret = BSP_ERROR_NONE;
   
   if (HAL_I2C_Master_Receive(&hi2c1, DevAddr, pData, Length, BUS_I2C1_POLL_TIMEOUT) != HAL_OK)
@@ -1029,7 +1031,7 @@ int32_t BSP_UART1_Init(void)
     #endif
       if(ret == BSP_ERROR_NONE)
 	  {
-    	/* Init the I2C */
+    	/* Init the UART */
     	if(MX_USART_Init(&huart1) != HAL_OK)
     	{
       		ret = BSP_ERROR_BUS_FAILURE;
@@ -1062,10 +1064,10 @@ int32_t BSP_UART1_DeInit(void)
     if (--UART1InitCounter == 0)
     {
   #if (USE_HAL_UART_REGISTER_CALLBACKS == 0)
-    	/* DeInit the I2C */
+    	/* DeInit the UART */
     	UART_MspDeInit(&huart1);
   #endif
-  		/* DeInit the I2C */
+  		/* DeInit the UART */
   		if (HAL_UART_DeInit(&huart1) != HAL_OK)
   		{
     		ret = BSP_ERROR_BUS_FAILURE;
@@ -1258,7 +1260,7 @@ static void UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 /*******************************************************************************
                             BUS OPERATIONS OVER ADC
 *******************************************************************************/
-
+static uint32_t adc_samples[ADC_SAMPLES];
 /**
   * @brief  Initialize adc HAL
   * @retval BSP status
@@ -1275,24 +1277,24 @@ int32_t BSP_ADC1_Init(void)
 
     if (HAL_ADC_GetState(&hadc1) == HAL_ADC_STATE_RESET)
     {
-      /* Init the I2C Msp */
+      /* Init the ADC Msp */
       ADC_MspInit(&hadc1);
       if(ret == BSP_ERROR_NONE)
 	  {
-    	/* Init the I2C */
+    	/* Init the ADC */
     	if(MX_ADC_Init(&hadc1) != HAL_OK)
     	{
       		ret = BSP_ERROR_BUS_FAILURE;
     	}
-    	else
-    	{
-      		ret = BSP_ERROR_NONE;
+    	else{
+    		ret = BSP_ERROR_NONE;
     	}
 	  }
     }
   }
   return ret;
 }
+
 
 
 /**
@@ -1323,20 +1325,22 @@ __weak HAL_StatusTypeDef MX_ADC_Init(ADC_HandleTypeDef* hadc)
 	  */
 	if(hadc->Instance == ADC1){
 		 //hadc->Instance = ADC1;
-		hadc->Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
+		hadc->Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV4;
 		hadc->Init.Resolution = ADC_RESOLUTION_12B;
 		hadc->Init.DataAlign = ADC_DATAALIGN_RIGHT;
 		hadc->Init.ScanConvMode = ADC_SCAN_DISABLE;
 		hadc->Init.EOCSelection = ADC_EOC_SEQ_CONV;
+		//hadc->Init.EOCSelection = ADC_EOC_SINGLE_CONV;
 		hadc->Init.LowPowerAutoWait = ADC_AUTOWAIT_DISABLE;
 		hadc->Init.LowPowerAutoPowerOff = ADC_AUTOPOWEROFF_DISABLE;
 		hadc->Init.ChannelsBank = ADC_CHANNELS_BANK_A;
-		hadc->Init.ContinuousConvMode = DISABLE;
+		//hadc->Init.ContinuousConvMode = DISABLE;
+		hadc->Init.ContinuousConvMode = ENABLE;
 		hadc->Init.NbrOfConversion = 1;
 		hadc->Init.DiscontinuousConvMode = DISABLE;
 		hadc->Init.ExternalTrigConv = ADC_SOFTWARE_START;
 		hadc->Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-		hadc->Init.DMAContinuousRequests = DISABLE;
+		hadc->Init.DMAContinuousRequests = ENABLE;
 		if (HAL_ADC_Init(hadc) != HAL_OK)
 		{
 			 //Error_Handler();
@@ -1345,7 +1349,7 @@ __weak HAL_StatusTypeDef MX_ADC_Init(ADC_HandleTypeDef* hadc)
 		/** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.*/
 		sConfig.Channel = ADC_CHANNEL_12;
 		sConfig.Rank = ADC_REGULAR_RANK_1;
-		sConfig.SamplingTime = ADC_SAMPLETIME_4CYCLES;
+		sConfig.SamplingTime = ADC_SAMPLETIME_384CYCLES;
 		if (HAL_ADC_ConfigChannel(hadc, &sConfig) != HAL_OK)
 		{
 			//Error_Handler();
@@ -1357,6 +1361,12 @@ __weak HAL_StatusTypeDef MX_ADC_Init(ADC_HandleTypeDef* hadc)
 	  return ret;
 }
 
+int32_t BSP_ADC1_Start(void){
+
+	//return HAL_ADC_Start_IT(&hadc1);
+	//return HAL_ADC_Start(&hadc1);
+	return HAL_ADC_Start_DMA(&hadc1, adc_samples, ADC_SAMPLES);
+}
 /**
   * @brief  Read tha analog value
   * @param  pData  Pointer to data variable to store the data read
@@ -1364,20 +1374,18 @@ __weak HAL_StatusTypeDef MX_ADC_Init(ADC_HandleTypeDef* hadc)
   */
 int32_t  BSP_ADC1_Read(uint16_t *pData)
 {
-  int32_t ret = BSP_ERROR_NONE;
-  HAL_ADC_Start(&hadc1);
-
-  if (__HAL_ADC_GET_FLAG(&hadc1, ADC_FLAG_EOC))
-  {
-    *pData = HAL_ADC_GetValue(&hadc1);
-    HAL_ADC_Stop(&hadc1);
+  int32_t ret = BSP_ERROR_BUS_FAILURE;
+  if(ADC1_read_done){
+	  *pData = adc_samples[0];
+	  ret = BSP_ERROR_NONE;
   }
   return ret;
 }
 
-static void ADC_MspInit(ADC_HandleTypeDef * adcHandle){
+static int32_t ADC_MspInit(ADC_HandleTypeDef * adcHandle){
 
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
+	int32_t ret = HAL_OK;
 	  if(adcHandle->Instance==ADC1)
 	  {
 	  /* USER CODE BEGIN ADC1_MspInit 0 */
@@ -1395,14 +1403,30 @@ static void ADC_MspInit(ADC_HandleTypeDef * adcHandle){
 	    GPIO_InitStruct.Pull = GPIO_NOPULL;
 	    HAL_GPIO_Init(DOGTEMP_GPIO_Port, &GPIO_InitStruct);
 
+	    /* ADC1 DMA Init */
+	    /* ADC Init */
+	    hdma_adc1.Instance = DMA1_Channel1;
+	    hdma_adc1.Init.Direction = DMA_PERIPH_TO_MEMORY;
+	    hdma_adc1.Init.PeriphInc = DMA_PINC_DISABLE;
+	    hdma_adc1.Init.MemInc = DMA_MINC_ENABLE;
+	    hdma_adc1.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+	    hdma_adc1.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+	    hdma_adc1.Init.Mode = DMA_CIRCULAR;
+	    hdma_adc1.Init.Priority = DMA_PRIORITY_HIGH;
+	    if (HAL_DMA_Init(&hdma_adc1) != HAL_OK)
+	    {
+	        return HAL_ERROR;
+	    }
+
+	        __HAL_LINKDMA(adcHandle,DMA_Handle,hdma_adc1);
 	    /* ADC1 interrupt Init */
-	    HAL_NVIC_SetPriority(ADC1_IRQn, 5, 0);
-	    HAL_NVIC_EnableIRQ(ADC1_IRQn);
+	    //HAL_NVIC_SetPriority(ADC1_IRQn, 5, 0);
+	    //HAL_NVIC_EnableIRQ(ADC1_IRQn);
 	  /* USER CODE BEGIN ADC1_MspInit 1 */
 
 	  /* USER CODE END ADC1_MspInit 1 */
 	  }
-
+	  return ret;
 	  /*Karen: If ADC2 will be used, here below add the code needed to configure the HW pines needed*/
 }
 
@@ -1421,17 +1445,26 @@ static void ADC_MspDeInit(ADC_HandleTypeDef* adcHandle){
 	    */
 	    HAL_GPIO_DeInit(DOGTEMP_GPIO_Port, DOGTEMP_Pin);
 
+	    /* ADC DMA DeInit*/
+	    HAL_DMA_DeInit(adcHandle->DMA_Handle);
 	    /* ADC1 interrupt Deinit */
-	    HAL_NVIC_DisableIRQ(ADC1_IRQn);
+	    //HAL_NVIC_DisableIRQ(ADC1_IRQn);
 	  /* USER CODE BEGIN ADC1_MspDeInit 1 */
 
 	  /* USER CODE END ADC1_MspDeInit 1 */
 	  }
 }
 
-void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi){
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef*hspi){
 	if(hspi->Instance == SPI3){
 		SPI3_rx_done++;
+	}
+}
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
+
+	if(hadc->Instance == ADC1) {
+		 ADC1_read_done ++;
 	}
 }
 
