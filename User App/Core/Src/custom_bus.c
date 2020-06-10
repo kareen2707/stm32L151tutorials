@@ -733,7 +733,7 @@ __weak HAL_StatusTypeDef MX_SPI_Init(SPI_HandleTypeDef* hspi)
 		hspi->Init.CLKPolarity = SPI_POLARITY_LOW;
 		hspi->Init.CLKPhase = SPI_PHASE_1EDGE;
 		hspi->Init.NSS = SPI_NSS_SOFT;
-		hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+		hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
 		hspi->Init.FirstBit = SPI_FIRSTBIT_MSB;
 		hspi->Init.TIMode = SPI_TIMODE_DISABLE;
 		hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -746,29 +746,6 @@ __weak HAL_StatusTypeDef MX_SPI_Init(SPI_HandleTypeDef* hspi)
 
   return ret;
 }
-
-//__weak HAL_StatusTypeDef MX_SPI3_Init(SPI_HandleTypeDef* hspi)
-//{
-//	HAL_StatusTypeDef ret = HAL_OK;
-//	hspi->Instance = SPI3;
-//	hspi->Init.Mode = SPI_MODE_MASTER;
-//	hspi->Init.Direction = SPI_DIRECTION_2LINES_RXONLY;
-//	hspi->Init.DataSize = SPI_DATASIZE_8BIT;
-//	hspi->Init.CLKPolarity = SPI_POLARITY_LOW;
-//	hspi->Init.CLKPhase = SPI_PHASE_1EDGE;
-//	hspi->Init.NSS = SPI_NSS_SOFT;
-//	hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
-//	hspi->Init.FirstBit = SPI_FIRSTBIT_MSB;
-//	hspi->Init.TIMode = SPI_TIMODE_DISABLE;
-//	hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-//	hspi->Init.CRCPolynomial = 10;
-//	if (HAL_SPI_Init(hspi) != HAL_OK)
-//	{
-//		ret = HAL_ERROR;
-//	}
-//	return ret;
-//}
-
 
 static int32_t SPI_MspInit(SPI_HandleTypeDef* spiHandle)
 {
@@ -874,7 +851,9 @@ static int32_t SPI_MspInit(SPI_HandleTypeDef* spiHandle)
 	    __HAL_LINKDMA(spiHandle,hdmarx,hdma_spi3_rx);
 
 	  /* USER CODE BEGIN SPI3_MspInit 1 */
-
+	    /* SPI3 interrupt Init */
+    	    HAL_NVIC_SetPriority(SPI3_IRQn, 0, 0);
+    	    HAL_NVIC_EnableIRQ(SPI3_IRQn);
 	  /* USER CODE END SPI3_MspInit 1 */
 	  }
 
@@ -1100,7 +1079,6 @@ int32_t BSP_UART1_Send(uint8_t *pData, uint16_t Length, uint32_t timeout){
   * @retval BSP status
   */
 
-//int32_t BSP_UART1_Recv(uint8_t *rxData, uint16_t size){ //Karen implementation
 int32_t BSP_UART1_Recv(uint8_t *pData, uint16_t Length, char *message){
 	//int32_t ret = BSP_ERROR_NONE;
 	uint8_t *new_uart_rx_ptr_head;
@@ -1330,11 +1308,9 @@ __weak HAL_StatusTypeDef MX_ADC_Init(ADC_HandleTypeDef* hadc)
 		hadc->Init.DataAlign = ADC_DATAALIGN_RIGHT;
 		hadc->Init.ScanConvMode = ADC_SCAN_DISABLE;
 		hadc->Init.EOCSelection = ADC_EOC_SEQ_CONV;
-		//hadc->Init.EOCSelection = ADC_EOC_SINGLE_CONV;
 		hadc->Init.LowPowerAutoWait = ADC_AUTOWAIT_DISABLE;
 		hadc->Init.LowPowerAutoPowerOff = ADC_AUTOPOWEROFF_DISABLE;
 		hadc->Init.ChannelsBank = ADC_CHANNELS_BANK_A;
-		//hadc->Init.ContinuousConvMode = DISABLE;
 		hadc->Init.ContinuousConvMode = ENABLE;
 		hadc->Init.NbrOfConversion = 1;
 		hadc->Init.DiscontinuousConvMode = DISABLE;
@@ -1349,10 +1325,9 @@ __weak HAL_StatusTypeDef MX_ADC_Init(ADC_HandleTypeDef* hadc)
 		/** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.*/
 		sConfig.Channel = ADC_CHANNEL_12;
 		sConfig.Rank = ADC_REGULAR_RANK_1;
-		sConfig.SamplingTime = ADC_SAMPLETIME_384CYCLES;
+		sConfig.SamplingTime = ADC_SAMPLETIME_4CYCLES;
 		if (HAL_ADC_ConfigChannel(hadc, &sConfig) != HAL_OK)
 		{
-			//Error_Handler();
 			return HAL_ERROR;
 		}
 	}
@@ -1363,8 +1338,6 @@ __weak HAL_StatusTypeDef MX_ADC_Init(ADC_HandleTypeDef* hadc)
 
 int32_t BSP_ADC1_Start(void){
 
-	//return HAL_ADC_Start_IT(&hadc1);
-	//return HAL_ADC_Start(&hadc1);
 	return HAL_ADC_Start_DMA(&hadc1, adc_samples, ADC_SAMPLES);
 }
 /**
@@ -1378,6 +1351,7 @@ int32_t  BSP_ADC1_Read(uint16_t *pData)
   if(ADC1_read_done){
 	  *pData = adc_samples[0];
 	  ret = BSP_ERROR_NONE;
+	  ADC_read_done = 0;
   }
   return ret;
 }
