@@ -1,6 +1,6 @@
 /*
  * ds600.h
- *
+ *	Header file of the corporal temperature sensor DS600 integrated in Panda Board.
  *  Created on: 15 abr. 2020
  *      Author: karen@b105.upm.es
  */
@@ -28,13 +28,15 @@ extern "C"
 
 typedef int32_t (*DS600_Init_Func)(void);
 typedef int32_t (*DS600_DeInit_Func)(void);
-typedef int32_t (*DS600_Read_Func)(uint16_t *);
+typedef int32_t (*DS600_Read_Func)(uint32_t *);
+typedef int32_t (*DS600_Start_Func)(void);
 
 typedef struct
 {
   DS600_Init_Func          Init;
   DS600_DeInit_Func        DeInit;
   DS600_Read_Func          Read;
+  DS600_Start_Func		   Start;
 } DS600_IO_t;
 
 typedef struct
@@ -44,7 +46,8 @@ typedef struct
 } DS600_Object_t;
 
 int32_t DS600_RegisterBusIO(DS600_Object_t *pObj, DS600_IO_t *pIO);
-int32_t DS600_GET_RawData(DS600_Object_t *pObj, uint16_t *adc_reading);
+int32_t DS600_Init(DS600_Object_t *pObj);
+int32_t DS600_GET_RawData(DS600_Object_t *pObj, uint32_t *adc_reading);
 int32_t DS600_GET_Temperature(DS600_Object_t *pObj, float *temperature);
 
 #ifdef __cplusplus
