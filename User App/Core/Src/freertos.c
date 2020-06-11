@@ -75,7 +75,7 @@ hts221_data_t* HTS221_Data_Read;
 
 DS600_Object_t* DS600_pObj;
 DS600_IO_t* DS600_pIO;
-float* corporal_temp;
+uint32_t* corporal_temp;
 
 SPH06440_Object_t* SPH06440_pObj;
 SPH06440_IO_t* SPH06440_pIO;
@@ -447,9 +447,9 @@ void microSD(void const * argument)
 
 	  	  corporal_rx = osMessageGet(ds600QueueHandle, 0);
 	  	  if(corporal_rx.status == osEventMessage){
-	  	   f_write(&SDFile, (const void *) corporal_rx.value.p, 1, (void *)&byteswritten);
+	  	   f_printf(&SDFile, "%d", (uint32_t)corporal_rx.value.p);
 	  	   vPortFree(corporal_temp);
-	  	   f_write(&SDFile, "C d\r\n", strlen("C d\r\n"), (void *)&byteswritten);
+	  	   f_write(&SDFile, " C d\r\n", strlen(" C d\r\n"), (void *)&byteswritten);
 	  	  }
 
 
@@ -568,10 +568,10 @@ void DS600(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-	  corporal_temp = (float*) pvPortMalloc(sizeof(float));
+	  corporal_temp = (uint32_t*) pvPortMalloc(sizeof(uint32_t));
 	  DS600_GET_Temperature(DS600_pObj, corporal_temp);
-	  osMessagePut(ds600QueueHandle, (uint32_t)corporal_temp, 0);
-    osDelay(20);
+	  osMessagePut(ds600QueueHandle, (uint32_t)(*corporal_temp), 0);
+    osDelay(500);
   }
   /* USER CODE END dogtemp */
 }
