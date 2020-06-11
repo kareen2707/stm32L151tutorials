@@ -1,6 +1,6 @@
 /*
  * ds600.c
- *
+ *	Source file of the corporal temperature sensor DS600 integrated in Panda Board.
  *  Created on: 15 abr. 2020
  *      Author: karen@b105.upm.es
  *
@@ -20,6 +20,7 @@ int32_t DS600_RegisterBusIO(DS600_Object_t *pObj, DS600_IO_t *pIO){
 		pObj->IO.Init      = pIO->Init;
 	    pObj->IO.DeInit    = pIO->DeInit;
 	    pObj->IO.Read 	   = pIO->Read;
+	    pObj->IO.Start	   = pIO->Start;
 
 	    if (pObj->IO.Init != NULL)
 	    {
@@ -34,7 +35,19 @@ int32_t DS600_RegisterBusIO(DS600_Object_t *pObj, DS600_IO_t *pIO){
 	return ret;
 }
 
-int32_t DS600_GET_RawData(DS600_Object_t *pObj, uint16_t *adc_reading){
+int32_t DS600_Init(DS600_Object_t *pObj){
+
+	int32_t ret;
+	if(pObj == NULL){
+		ret = DS600_ERROR;
+	}
+	else{
+		ret = pObj->IO.Start();
+	}
+	return ret;
+}
+
+int32_t DS600_GET_RawData(DS600_Object_t *pObj, uint32_t *adc_reading){
 	int32_t ret;
 
 	if (pObj == NULL)
@@ -51,7 +64,7 @@ int32_t DS600_GET_RawData(DS600_Object_t *pObj, uint16_t *adc_reading){
 int32_t DS600_GET_Temperature(DS600_Object_t *pObj, float *temperature){
 
 	int32_t ret;
-	uint16_t adc_reading = 0;
+	uint32_t adc_reading = 0;
 	float volt_res = (float) POWER_SUPPLY/ADC_RESOLUTION;
 	float volt_read;
 
@@ -66,7 +79,7 @@ int32_t DS600_GET_Temperature(DS600_Object_t *pObj, float *temperature){
 			*temperature = (volt_read - OUTPUT_VOLTAGE_OFFSET)/OUTPUT_GAIN;
 		}
 		else{
-			ret = DS600_ERROR;
+   			ret = DS600_ERROR;
 		}
 	}
 
