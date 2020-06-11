@@ -221,7 +221,7 @@ void MX_FREERTOS_Init(void) {
 	}
 
 	HTS221_pObj->is_initialized = 0;
-	HTS221_pIO->Address = (uint8_t)(HTS221_I2C_ADDRESS << 1);
+	HTS221_pIO->Address = (uint8_t)HTS221_I2C_ADDRESS;
 	HTS221_pIO->BusType = HTS221_I2C_BUS;
 	HTS221_pIO->Init = BSP_I2C1_Init;
 	HTS221_pIO->DeInit = BSP_I2C1_DeInit;
@@ -301,14 +301,7 @@ void MX_FREERTOS_Init(void) {
 	}
 
 	MX_FATFS_Init();
-	if(f_mount(&SDFatFS, (TCHAR const*) SDPath, 1) == FR_OK){ // 1. Register a work area
-			if(f_open(&SDFile, "tfm1.txt", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK){ // 2. Creating a new file to write it later
-				fileCreated = 1;
-				osThreadDef(microSDTask, microSD, osPriorityNormal, 0, 200);
-				microSDTaskHandle = osThreadCreate(osThread(microSDTask), NULL);
-			}
-		}
-
+	
   /* USER CODE END Init */
 
   /* Create the mutex(es) */
@@ -339,21 +332,14 @@ void MX_FREERTOS_Init(void) {
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* definition and creation of microSDTask */
-//  osThreadDef(microSDTask, microSD, osPriorityNormal, 0, 200);
-//  microSDTaskHandle = osThreadCreate(osThread(microSDTask), NULL);
+  osThreadDef(microSDTask, microSD, osPriorityNormal, 0, 200);
+  microSDTaskHandle = osThreadCreate(osThread(microSDTask), NULL);
 
-  /* definition and creation of hts221Task */
-//  osThreadDef(hts221Task, HTS221, osPriorityNormal, 0, 128);
-//  hts221TaskHandle = osThreadCreate(osThread(hts221Task), NULL);
-
+  
   /* definition and creation of gnssTask */
 //  osThreadDef(gnssTask, SE868K3, osPriorityNormal, 0, 300);
 //  gnssTaskHandle = osThreadCreate(osThread(gnssTask), (void*) SE868K3_pObj);
 
-  /* definition and creation of dogTempTask */
-//  osThreadDef(dogtempTask, dogTemp, osPriorityBelowNormal, 0, 96);
-//  ds600TaskHandle = osThreadCreate(osThread(dogtempTask), NULL);
-//
 //  /* definition and creation of sph064Task */
 //  osThreadDef(sph064Task, mphones, osPriorityIdle, 0, 128);
 //  sph064TaskHandle = osThreadCreate(osThread(sph064Task), NULL);
@@ -377,10 +363,7 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
-  /* init code for FATFS */
 
-  /* init code for MEMS */
-  //MX_MEMS_Init();
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
   for(;;)
@@ -407,6 +390,13 @@ void microSD(void const * argument)
 	osEvent mphones_rx;
 	osEvent corporal_rx;
 	uint8_t byteswritten;
+	hts221_data_t* local_data;
+	
+	if(f_mount(&SDFatFS, (TCHAR const*) SDPath, 1) == FR_OK){ // 1. Register a work area
+				if(f_open(&SDFile, "tfm5.txt", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK){ // 2. Creating a new file to write it later
+					fileCreated = 1;
+				}
+			}
 
   /* Infinite loop */
   for(;;)
@@ -425,9 +415,12 @@ void microSD(void const * argument)
 //	  	  }
 	  	  temp_rx = osMessageGet(hts221_QueueHandle, 1);
 	  	  if(temp_rx.status == osEventMessage){
-	  		f_write(&SDFile, (const void *) temp_rx.value.p, 1, (void *)&byteswritten);
+	  		local_data = (hts221_data_t*) temp_rx.value.p;
+	  		f_printf(&SDFile, "%d", (uint32_t) local_data->temperature);
+	  		f_write(&SDFile, " degrees\r\n", strlen(" degrees\r\n"), (void *)&byteswritten);
+	  		f_printf(&SDFile, "%d", (uint32_t) local_data->humidity);
+	  		f_write(&SDFile, " rH\r\n", strlen(" rH\r\n"), (void *)&byteswritten);
 	  		vPortFree(HTS221_Data_Read);
-	  		f_write(&SDFile, "degrees\r\n", strlen("degrees\r\n"), (void *)&byteswritten);
 	  	  }
 
 	  	  mphones_rx = osMessageGet(mphonesQueueHandle, 2);
@@ -474,31 +467,29 @@ void microSD(void const * argument)
 void HTS221(void const * argument)
 {
   /* USER CODE BEGIN HTS221 */
-
-//	HTS221_pIO.Address = (uint8_t) (HTS221_I2C_ADDRESS<<1);
-//	HTS221_pIO.BusType = HTS221_I2C_BUS;
-//	HTS221_pIO.Init = BSP_I2C1_Init;
-//	HTS221_pIO.DeInit = BSP_I2C1_DeInit;
-//	HTS221_pIO.ReadReg = BSP_I2C1_Recv;
-//	HTS221_pIO.WriteReg = BSP_I2C1_Send;
-	//HTS221_pIO.GetTick = BSP_GetTick;
+	uint32_t ret;
 	uint8_t id, status;
-	//HTS221_RegisterBusIO(&HTS221_pObj, &HTS221_pIO);
 	HTS221_Object_t *HTS221_pObj = (HTS221_Object_t*) argument;
-	HTS221_Init(HTS221_pObj);
-	HTS221_ReadID(HTS221_pObj, &id);
-	if(id == HTS221_ID){
-		HTS221_Get_Init_Status(HTS221_pObj, &status);
-		HTS221_HUM_Enable(HTS221_pObj);
-		HTS221_TEMP_Enable(HTS221_pObj);
+	ret = HTS221_Init(HTS221_pObj);
+	if(!ret){
+		HTS221_ReadID(HTS221_pObj, &id);
+		if(id == HTS221_ID){
+			HTS221_Get_Init_Status(HTS221_pObj, &status);
+			HTS221_HUM_Enable(HTS221_pObj);
+			HTS221_TEMP_Enable(HTS221_pObj);
+			ret = HTS221_OK;
+		}
 	}
+
   /* Infinite loop */
   for(;;)
   {
-	  HTS221_Data_Read = (hts221_data_t*)pvPortMalloc(sizeof(hts221_data_t));
-	  HTS221_TEMP_GetTemperature(HTS221_pObj, &HTS221_Data_Read->temperature);
-	  HTS221_HUM_GetHumidity(HTS221_pObj, &HTS221_Data_Read->humidity);
-	  osMessagePut(hts221_QueueHandle, (uint32_t)HTS221_Data_Read, 2);
+	  if(ret == HTS221_OK){
+		  HTS221_Data_Read = (hts221_data_t*)pvPortMalloc(sizeof(hts221_data_t));
+		  HTS221_TEMP_GetTemperature(HTS221_pObj, &HTS221_Data_Read->temperature);
+		  HTS221_HUM_GetHumidity(HTS221_pObj, &HTS221_Data_Read->humidity);
+		  osMessagePut(hts221_QueueHandle, (uint32_t)HTS221_Data_Read, 2);
+	  }
 	  osDelay(500);
   }
   /* USER CODE END HTS221 */
