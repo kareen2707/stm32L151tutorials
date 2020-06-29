@@ -402,25 +402,13 @@ void microSD(void const * argument)
   for(;;)
   {
 	  byteswritten = 0;
-//	  	  if(fileCreated && new_cmd){
-//	  		  if((osMutexWait(gnssMutexHandle, 6)) == osOK){
-//	  			  rx = osMessageGet(gnssQueueHandle, 0);
-//	  			  new_cmd = 0; // Cleaning the flag
-//	  			  osMutexRelease(gnssMutexHandle);
-//	  			  f_write(&SDFile, (const void *) rx.value.p, BUFFER_PCKT_SIZE, (void *)&byteswritten);
-//	  			  f_write(&SDFile, "\r\n", strlen("\r\n"), (void *)&byteswritten);
-//	  			  //HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
-//	  			  //f_sync(&SDFile);
-//	  		  }
-//	  	  }
+	  if(fileCreated){
+		  
 	  	  temp_rx = osMessageGet(hts221_QueueHandle, 1);
 	  	  if(temp_rx.status == osEventMessage){
 	  		local_data = (hts221_data_t*) temp_rx.value.p;
-	  		f_printf(&SDFile, "%d", (uint32_t) local_data->temperature);
-	  		f_write(&SDFile, " degrees\r\n", strlen(" degrees\r\n"), (void *)&byteswritten);
-	  		f_printf(&SDFile, "%d", (uint32_t) local_data->humidity);
-	  		f_write(&SDFile, " rH\r\n", strlen(" rH\r\n"), (void *)&byteswritten);
-	  		vPortFree(HTS221_Data_Read);
+	  		f_printf(&SDFile, "HTSS221 %d degrees %d rH\r\n", (uint32_t) local_data->temperature, (uint32_t) local_data->humidity);
+		  	vPortFree(HTS221_Data_Read);
 	  	  }
 
 	  	  mphones_rx = osMessageGet(mphonesQueueHandle, 2);
@@ -451,6 +439,7 @@ void microSD(void const * argument)
 	  		f_write(&SDFile, (const void *) gnss_rx.value.p, BUFFER_PCKT_SIZE, (void *)&byteswritten);
 	  		f_write(&SDFile, "\r\n", strlen("\r\n"), (void *)&byteswritten);
 	  	  }
+	  }	  
 	  	  f_sync(&SDFile);
     osDelay(110);
   }
