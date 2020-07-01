@@ -29,14 +29,12 @@ extern "C"
 typedef int32_t (*DS600_Init_Func)(void);
 typedef int32_t (*DS600_DeInit_Func)(void);
 typedef int32_t (*DS600_Read_Func)(uint32_t *);
-typedef int32_t (*DS600_Start_Func)(void);
 
 typedef struct
 {
   DS600_Init_Func          Init;
   DS600_DeInit_Func        DeInit;
   DS600_Read_Func          Read;
-  DS600_Start_Func		   Start;
 } DS600_IO_t;
 
 typedef struct
