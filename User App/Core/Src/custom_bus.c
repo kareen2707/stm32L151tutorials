@@ -1336,10 +1336,6 @@ __weak HAL_StatusTypeDef MX_ADC_Init(ADC_HandleTypeDef* hadc)
 	  return ret;
 }
 
-int32_t BSP_ADC1_Start(void){
-
-	return HAL_ADC_Start_DMA(&hadc1, adc_samples, ADC_SAMPLES);
-}
 /**
   * @brief  Read tha analog value
   * @param  pData  Pointer to data variable to store the data read
@@ -1348,11 +1344,14 @@ int32_t BSP_ADC1_Start(void){
 int32_t  BSP_ADC1_Read(uint32_t *pData)
 {
   int32_t ret = BSP_ERROR_BUS_FAILURE;
-  if(ADC1_read_done){
-	  *pData = adc_samples[0];
-	  ret = BSP_ERROR_NONE;
-	  ADC_read_done = 0;
-  }
+  //if(ADC1_read_done){
+  //	  *pData = adc_samples[0];
+  //	  ret = BSP_ERROR_NONE;
+  //	  ADC_read_done = 0;
+  //}
+  ret = HAL_ADC_Start(&hadc1);
+  ret = HAL_ADC_PollForConversion(&hadc1, 10);
+  *pData = HAL_ADC_GetValue(&hadc1);
   return ret;
 }
 
@@ -1394,8 +1393,8 @@ static int32_t ADC_MspInit(ADC_HandleTypeDef * adcHandle){
 
 	        __HAL_LINKDMA(adcHandle,DMA_Handle,hdma_adc1);
 	    /* ADC1 interrupt Init */
-	    //HAL_NVIC_SetPriority(ADC1_IRQn, 5, 0);
-	    //HAL_NVIC_EnableIRQ(ADC1_IRQn);
+	    HAL_NVIC_SetPriority(ADC1_IRQn, 5, 0);
+	    HAL_NVIC_EnableIRQ(ADC1_IRQn);
 	  /* USER CODE BEGIN ADC1_MspInit 1 */
 
 	  /* USER CODE END ADC1_MspInit 1 */
@@ -1422,7 +1421,7 @@ static void ADC_MspDeInit(ADC_HandleTypeDef* adcHandle){
 	    /* ADC DMA DeInit*/
 	    HAL_DMA_DeInit(adcHandle->DMA_Handle);
 	    /* ADC1 interrupt Deinit */
-	    //HAL_NVIC_DisableIRQ(ADC1_IRQn);
+	    HAL_NVIC_DisableIRQ(ADC1_IRQn);
 	  /* USER CODE BEGIN ADC1_MspDeInit 1 */
 
 	  /* USER CODE END ADC1_MspDeInit 1 */
