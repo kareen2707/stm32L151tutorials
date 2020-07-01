@@ -20,7 +20,6 @@ int32_t DS600_RegisterBusIO(DS600_Object_t *pObj, DS600_IO_t *pIO){
 		pObj->IO.Init      = pIO->Init;
 	    pObj->IO.DeInit    = pIO->DeInit;
 	    pObj->IO.Read 	   = pIO->Read;
-	    pObj->IO.Start	   = pIO->Start;
 
 	    if (pObj->IO.Init != NULL)
 	    {
@@ -40,9 +39,6 @@ int32_t DS600_Init(DS600_Object_t *pObj){
 	int32_t ret;
 	if(pObj == NULL){
 		ret = DS600_ERROR;
-	}
-	else{
-		ret = pObj->IO.Start();
 	}
 	return ret;
 }
