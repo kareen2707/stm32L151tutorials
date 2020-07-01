@@ -305,10 +305,6 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END Init */
 
   /* Create the mutex(es) */
-  /* definition and creation of gnssMutex */
-	osMutexDef(gnssMutex);
-	gnssMutexHandle = osMutexCreate(osMutex(gnssMutex));
-
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
@@ -403,21 +399,21 @@ void microSD(void const * argument)
   {
 	  byteswritten = 0;
 	  if(fileCreated){
-		  
+		  /* HTS221 data reception */
 	  	  temp_rx = osMessageGet(hts221_QueueHandle, 1);
 	  	  if(temp_rx.status == osEventMessage){
 	  		local_data = (hts221_data_t*) temp_rx.value.p;
 	  		f_printf(&SDFile, "HTSS221 %d degrees %d rH\r\n", (uint32_t) local_data->temperature, (uint32_t) local_data->humidity);
 		  	vPortFree(HTS221_Data_Read);
 	  	  }
-
+		  /* SPH0644HM4H-1 data reception */
 	  	  mphones_rx = osMessageGet(mphonesQueueHandle, 2);
 	  	  if(mphones_rx.status == osEventMessage){
 	  		f_write(&SDFile, (const void *) mphones_rx.value.p, 20, (void *)&byteswritten);
 	  		vPortFree(sound);
 	  		f_write(&SDFile, "pdm\r\n", strlen("pdm\r\n"), (void *)&byteswritten);
 	  	  }
-
+		  /* BMX160 data reception */
 	  	  imu_rx = osMessageGet(bmx160QueueHandle, 2);
 	  	  if(imu_rx.status == osEventMessage){
 	  		f_write(&SDFile, (const void *) imu_rx.value.p, 1, (void *)&byteswritten);
@@ -425,12 +421,11 @@ void microSD(void const * argument)
 	  		vPortFree(gyro);
 	  		f_write(&SDFile, "G\r\n", strlen("G\r\n"), (void *)&byteswritten);
 	  	  }
-
+		  /* DS600 data reception */
 	  	  corporal_rx = osMessageGet(ds600QueueHandle, 0);
 	  	  if(corporal_rx.status == osEventMessage){
-	  	   f_printf(&SDFile, "%d", (uint32_t)corporal_rx.value.p);
+	  	   f_printf(&SDFile, "DS600 %d degrees \r\n", (uint32_t)corporal_rx.value.p);
 	  	   vPortFree(corporal_temp);
-	  	   f_write(&SDFile, " C d\r\n", strlen(" C d\r\n"), (void *)&byteswritten);
 	  	  }
 
 
