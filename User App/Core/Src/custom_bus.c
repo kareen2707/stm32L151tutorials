@@ -1345,7 +1345,7 @@ int32_t BSP_ADC1_Start(void){
   * @param  pData  Pointer to data variable to store the data read
   * @retval BSP status
   */
-int32_t  BSP_ADC1_Read(uint16_t *pData)
+int32_t  BSP_ADC1_Read(uint32_t *pData)
 {
   int32_t ret = BSP_ERROR_BUS_FAILURE;
   if(ADC1_read_done){
