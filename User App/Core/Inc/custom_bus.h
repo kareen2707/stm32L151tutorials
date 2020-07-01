@@ -198,7 +198,7 @@ HAL_StatusTypeDef MX_ADC_Init(ADC_HandleTypeDef* hadc);
 int32_t BSP_ADC1_Init(void);
 int32_t BSP_ADC1_Start(void);
 int32_t BSP_ADC1_DeInit(void);
-int32_t BSP_ADC1_Read(uint16_t* value);
+int32_t BSP_ADC1_Read(uint32_t* value);
 
 /**
   * @}
