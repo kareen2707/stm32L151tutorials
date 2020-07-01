@@ -189,14 +189,13 @@ int32_t BSP_UART1_Init(void);
 int32_t BSP_UART1_DeInit(void);
 int32_t BSP_UART1_Send(uint8_t *pData, uint16_t Length, uint32_t timeout);
 //int32_t BSP_UART1_Recv(uint8_t *pData, uint16_t Length);
-int32_t BSP_UART1_Recv(uint8_t *pData, uint16_t Length, char *message); //KAREN: new reception implementation. It should work, but need to be tested
+int32_t BSP_UART1_Recv(uint8_t *pData, uint16_t Length, char *message); //KAREN: new reception implementation.
 int32_t BSP_GetTick(void);
 
 #define ADC_SAMPLES 3
 
 HAL_StatusTypeDef MX_ADC_Init(ADC_HandleTypeDef* hadc);
 int32_t BSP_ADC1_Init(void);
-int32_t BSP_ADC1_Start(void);
 int32_t BSP_ADC1_DeInit(void);
 int32_t BSP_ADC1_Read(uint32_t* value);
 
