@@ -2,7 +2,7 @@
  * se868k3.h
  *
  *  Created on: Feb 4, 2020
- *      Author: karen
+ *      Author: karen@b105.upm.es
  */
 
 #ifndef SE868K3_H
@@ -15,7 +15,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include <se868k3_reg.h>
 #include <string.h>
-#include "cmsis_os.h" //karen
+#include "cmsis_os.h"
 
 
  /** @defgroup SE868K3_Exported_Types SE868K3-AL Exported Types
@@ -39,10 +39,8 @@ typedef struct
   {
 	SE868K3_IO_t        IO;
 	se868k3_ctx_t       Ctx;
-    uint8_t             is_initialized; //this could be part of the flags
-    uint16_t			*flags;
-    osMutexId			pileLock;
-    uint8_t				*pileUART; //add the circular buffer files needed
+    uint8_t             is_initialized;
+    uint8_t				*pileUART;
   } SE868K3_Object_t;
 
 
