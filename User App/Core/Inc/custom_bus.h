@@ -135,7 +135,8 @@ extern UART_HandleTypeDef huart1;
 extern SPI_HandleTypeDef hspi1;
 extern SPI_HandleTypeDef hspi3;
 extern ADC_HandleTypeDef hadc1;
-
+extern DMA_HandleTypeDef hdma_uart1;
+extern DMA_HandleTypeDef hdma_adc1;
 /**
   * @}
   */
